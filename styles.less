@@ -6,6 +6,12 @@ body {
   font-family: 'Josefin Sans';  
   background-color: rgb(39,39,39) 
 }
+#viewer {
+  .absolute;
+}
+#viewer-img {
+ width: 760px;
+}
 
 .shadowy {
   -webkit-box-shadow: 0px 0px 5px #000;
@@ -17,13 +23,18 @@ body {
 }
 
 #main-logo {
+  color: rgb(70,70,70);
   .absolute;
   left: 10px;
   font-size: 20px;
+  cursor: pointer;
 }
-
+.thumb {
+  width: 43px;
+  height: 43px;
+}
 #thumbs {
-  @width: 300px;
+  @width: 200px;
   right: -1 * @width;
   .absolute;
   background-color: green;
@@ -59,5 +70,6 @@ body {
   .absolute;
   bottom: 50px;
   padding-top: 10px;
-  padding-bottom: 10px
+  padding-bottom: 10px;
+  background-color: black;
 }
