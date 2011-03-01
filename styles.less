@@ -1,4 +1,6 @@
-
+a {
+  outline:none;  
+}
 
 body {
   font-family: 'Josefin Sans';  
@@ -20,6 +22,14 @@ body {
   font-size: 20px;
 }
 
+#thumbs {
+  @width: 300px;
+  right: -1 * @width;
+  .absolute;
+  background-color: green;
+  height: 640px;
+  width: @width;
+}
 #home {
       
 }
@@ -31,7 +41,7 @@ body {
 #links a {
   margin-right: 15px;
   font-size: 20px;
-  color: rgb(200,200,200);
+  color: rgb(100,100,100);
   text-decoration: none;
 }
 
@@ -39,7 +49,8 @@ body {
   position: relative;
   width: 960px;
   height: 640px;
-  .shadowy
+  .shadowy;
+  overflow: hidden;
 }
 
 #banner {
