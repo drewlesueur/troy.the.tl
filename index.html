@@ -90,28 +90,38 @@
         model = e.model
         e.view = k.new HomeView
         view = e.view
-
-        k(model).bind "change:galleries", (e) ->
+        imgCss =
+          width: "43px"
+          height: "43px"
+        k(model).bind "change:galleries", (model) ->
           p(view).clearNavLinks()
+          e.linkPanelMap = {}
+          galleryIndex = 0
           for gallery, info of model.galleries
-            p(view).addNavLink k.capitalize(k(gallery).s("gallery_".length)), "#"
-            
-
+            linkName = k.capitalize(k(gallery).s("gallery_".length))
+            p(view).addNavLink linkName, "#"
+            imagePanel = k.new ImagePanelView
+            imagePanel.linkName = linkName
+            k(imagePanel).bind "click", (imagePanel, meta) ->
+              p(view).setImage meta.image
+            for image, index in info.images
+              thumb = info.thumbs[index]
+              meta = image: image, thumb: thumb, linkName: linkName
+              p.addImage imagePanel, thumb, imgCss, meta 
+            p(view.thumbsView).addPanel imagePanel
+            e.linkPanelMap[linkName] = galleryIndex
+            galleryIndex++
+             
         
-        k(view).bind "link", (e, linkName) ->
+        k(view).bind "link", (view, linkName) ->
           if linkName is view.galleryState
             return
+
           view.galleryState = linkName
-          p.clearThumbnails e
-          p.slideThumbnails e, "out"
-          p.slideBanner e, "down"
+          p.slideThumbnails view, "out"
+          p.slideBanner view, "down"
           gallery_name = "gallery_" + linkName.toLowerCase() 
-          for image, index in model.galleries[gallery_name].images
-            if k.s(image, -2) == "db" then return
-            url = 
-              big: image
-              thumb: model.galleries[gallery_name].thumbs[index]
-            p.addImage view, url 
+          p.goto view.thumbsView, e.linkPanelMap[linkName]
 
 
         k(view).bind "homeclick", (e) ->
@@ -135,10 +145,11 @@
           "background-color" : "rgb(70,70,70)"
           "position" : "absolute"
           "top" : "0"
+          "overflow": "hidden"
           e.slideWrapper = div ""
           e.slideWrapper.css "position": "absolute"
           e.el.append e.slideWrapper
-          e.pannelCount = 0
+          e.panelCount = 0
         return e 
       goto : (e, index) ->
         if z.browser.webkit
@@ -147,25 +158,25 @@
         else
           $(e.slideWrapper).animate "left" : (-1 * (index * e.width)) + "px"
         
-      addPannel: (e, pannelView) ->
-        e.pannelCount++
-        count = e.pannelCount # so count has its own scope
-        if not pannelView
-          pannelView = $ "<div>"
-        pannelEl = getEl pannelView
-        pannelWrapper = $ "<div>"
-        pannelWrapper.css 
+      addPanel: (e, panelView) ->
+        e.panelCount++
+        count = e.panelCount # so count has its own scope
+        if not panelView
+          panelView = $ "<div>"
+        panelEl = getEl panelView
+        panelWrapper = $ "<div>"
+        panelWrapper.css 
           "width": "#{e.width}px"
           "height": "#{e.height}px"
           "position": "absolute"
           "top" : "0"
-          "left": (e.pannelCount - 1) * e.width 
-        pannelWrapper.append pannelEl
-        pannelWrapper.bind "click", (event) ->
+          "left": (e.panelCount - 1) * e.width 
+        panelWrapper.append panelEl
+        panelWrapper.bind "click", (event) ->
           k(e).trigger "click", count - 1
 
-        $(e.slideWrapper).css "width": (e.pannelCount * e.width) + "px"
-        e.slideWrapper.append getEl pannelWrapper 
+        $(e.slideWrapper).css "width": (e.panelCount * e.width) + "px"
+        e.slideWrapper.append getEl panelWrapper 
 
     HomeView = k.class
       #jquert binds and triggers can go in here
@@ -180,6 +191,8 @@
           
         console.log e.thumbsView.el
         $('#thumbs').append e.thumbsView.el
+      setImage: (e, url) ->
+        $("#viewer-img").attr "src", url
       clearNavLinks: (e) ->
         e.el.find("#links").empty()
       addNavLink: (e, linkName, linkAddress) ->
