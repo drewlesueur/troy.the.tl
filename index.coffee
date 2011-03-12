@@ -49,6 +49,7 @@
 
     class SlideShowView extends Backbone.View
       constructor: () ->
+        @el = div ""
         @width = 960
         @height = 460
         @timer = ""
@@ -69,20 +70,18 @@
 
     Backbone.emulateHTTP = true
 
-    class Home extends Backbone.Model
+    class HomeModel extends Backbone.Model
       constructor: () ->
         super
         _.bindAll this
         @set test: "another thing"
       url: 'http://troybrinkerhoff.com/new2/galleries.php'
 
-      loadGalleriesSuccess: (data) ->
-        console.log this
-        console.log 'test'
-        console.log this.attributes
+      loadGalleriesSuccess: (data) =>
+        console.log data
         @set "galleries": data 
         
-      loadGalleries: () ->
+      loadGalleries: () =>
         $.ajax
           type: "GET"
           url: "http://troybrinkerhoff.com/new2/galleries.php"
@@ -93,6 +92,7 @@
     class ImagePanelView extends Backbone.View
       constructor: () ->
         super
+        @el = div ""
         _.bindAll this
 
       addImage: (url, css, meta) ->
@@ -105,9 +105,11 @@
         @trigger "click", @meta
 
 
-    class HorizontalSliderView extends Backbone.Model
-      constructor: (@width=300, @height=500) ->
+    class HorizontalSliderView extends Backbone.View
+      constructor: (@width=300, @height=300) ->
         super
+        _.bindAll this
+        @el = div ""
         @el.css
           width: "#{@width}px"
           height: "#{@height}px"
@@ -117,16 +119,15 @@
           overflow: "hidden"
         @slideWrapper = div ""
         @slideWrapper.css position: "absolute"
-        @el.append @slideWrapper
+        $(@el).append @slideWrapper
         @panelCount = 0
-        _.bindAll this
         return this
       goto: (index) ->
         if z.browser.webkit
-          translateX =  (-1 * (index * e.width)) 
+          translateX =  (-1 * (index * @width)) 
           z(@slideWrapper[0]).anim "translateX" : translateX + "px"
         else
-          $(@slideWrapper).animate "left" : (-1 * (index * e.width)) + "px"
+          $(@slideWrapper).animate "left" : (-1 * (index * @width)) + "px"
         
       addPanel: (panelView) ->
         @panelCount++
@@ -140,11 +141,10 @@
           height: "#{@height}px"
           position: "absolute"
           top : "0"
-          left: (e.panelCount - 1) * e.width 
+          left: (@panelCount - 1) * @width 
         panelWrapper.append panelEl
-        thisSlider = this
-        panelWrapper.bind "click", (event) ->
-          thisSlider.panelWrapperClick(count - 1)
+        panelWrapper.bind "click", (event) =>
+          @panelWrapperClick(count - 1)
 
         $(@slideWrapper).css "width": (@panelCount * @width) + "px"
         @slideWrapper.append getEl panelWrapper 
@@ -153,16 +153,18 @@
           
 
     class HomeView extends Backbone.View
-      initialize: (e) ->
+      initialize: () ->
         super
         _.bindAll this
         @thumbsWidth = 200
         @el = $('#home-wrapper')
         @state = "home"
         @thumbGroupings = []
+        $('#main-logo').click @triggerMainLogoClick
+          
         @thumbsView = new HorizontalSliderView @thumbsWidth, 640
         $('#thumbs').append @thumbsView.el
-      triggerMainLogoClick: () ->
+      triggerMainLogoClick: () =>
         @trigger "homeclick"
       setImage: (url) ->
         $("#viewer-img").attr "src", url
@@ -170,19 +172,19 @@
         @el.find("#links").empty()
       addNavLink: (linkName, linkAddress) ->
         a = $ "<a class='nav' href='#'>#{linkName}</a>"
-        that = this
-        a.bind "click", (event) ->
+        a.bind "click", (event) =>
           event.preventDefault();
-          that.triggerLinkClick linkName
-        e.el.find("#links").append a
-      triggerLinkClick: (linkName) ->
+          @triggerLinkClick linkName
+        @el.find("#links").append a
+      triggerLinkClick: (linkName) =>
         @trigger "link", linkName
         
-      loadViewerImage: (e, url) ->
+      loadViewerImage: (url) ->
         $("#viewer-img").attr "src", url
       addImage: (urls) ->
         return
-      slideThumbnails: (e, outOrIn) ->
+      slideThumbnails: (outOrIn) ->
+        console.log "sliding thumbnails #{outOrIn}"
         if outOrIn == "out"
           translate = "-#{@thumbsWidth}px"
           right = 0
@@ -193,7 +195,7 @@
           z("#thumbs").anim({"translateX": translate})
         else
           $('#thumbs').animate({right: right})
-      slideBanner: (e, upOrDown) ->
+      slideBanner: (upOrDown) ->
         if upOrDown is "down"
           translate = "50px"
           bottom = 0
@@ -206,12 +208,60 @@
           $("#banner").animate "bottom" : bottom
 
 
+    class HomePresenter
+      constructor: () ->
+        _.bindAll this
+        #slideshow = k.new SlideShowView
+        #p(slideshow).addPicture "http://troybrinkerhoff.com/gallery_couples/images/13.jpg"
+        #$(document.body).append slideshow.el
+        @model = new HomeModel
+        @view = new HomeView
+        @imgCss =
+          width: "43px"
+          height: "43px"
+        @model.bind "change:galleries", @handleGalleriesChange
+            
+        
+        @view.bind "link", @handleLinkClick
+          
+        @model.loadGalleries()
 
 
-    home = new Home test: "something"
-    console.log home 
-    home.loadGalleries()
+      handleLinkClick: (linkName) =>
+        if linkName is @view.galleryState
+          return
+        @view.galleryState = linkName
+        @view.slideThumbnails "out"
+        @view.slideBanner "down"
+        gallery_name = "gallery_" + linkName.toLowerCase() 
+        @view.thumbsView.goto @linkPanelMap[linkName]
 
+        @view.bind "homeclick", () =>
+          @view.galleryState =  ""
+          @view.slideThumbnails "in"
+          @view.slideBanner "up"
+
+      handleGalleriesChange: (event ) =>
+        @view.clearNavLinks()
+        @linkPanelMap = {}
+        galleryIndex = 0
+        for gallery, info of @model.get "galleries"
+          linkName = k.capitalize(k(gallery).s("gallery_".length))
+          console.log linkName
+          @view.addNavLink linkName, "#"
+          imagePanel = new ImagePanelView
+          imagePanel.linkName = linkName
+          imagePanel.bind "click", (meta) =>
+            @view.setImage meta.image
+          for image, index in info.images
+            thumb = info.thumbs[index]
+            meta = image: image, thumb: thumb, linkName: linkName
+            imagePanel.addImage thumb, @imgCss, meta 
+          @view.thumbsView.addPanel imagePanel
+          @linkPanelMap[linkName] = galleryIndex
+          galleryIndex++
+
+    app = new HomePresenter
 
       
 

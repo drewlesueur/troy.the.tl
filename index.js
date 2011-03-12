@@ -7,7 +7,7 @@
     child.prototype = new ctor;
     child.__super__ = parent.prototype;
     return child;
-  };
+  }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   _.mixin({
     s: function(val, start, end) {
       var need_to_join, ret;
@@ -59,11 +59,12 @@
     window.console.log = function() {};
   }
   $(document).ready(function() {
-    var Home, HomeView, HorizontalSliderView, ImagePanelView, SlideShowView, home;
+    var HomeModel, HomePresenter, HomeView, HorizontalSliderView, ImagePanelView, SlideShowView, app;
     console.log("ready");
     SlideShowView = (function() {
       __extends(SlideShowView, Backbone.View);
       function SlideShowView() {
+        this.el = div("");
         this.width = 960;
         this.height = 460;
         this.timer = "";
@@ -90,25 +91,24 @@
       return SlideShowView;
     })();
     Backbone.emulateHTTP = true;
-    Home = (function() {
-      __extends(Home, Backbone.Model);
-      function Home() {
-        Home.__super__.constructor.apply(this, arguments);
+    HomeModel = (function() {
+      __extends(HomeModel, Backbone.Model);
+      function HomeModel() {
+        this.loadGalleries = __bind(this.loadGalleries, this);;
+        this.loadGalleriesSuccess = __bind(this.loadGalleriesSuccess, this);;        HomeModel.__super__.constructor.apply(this, arguments);
         _.bindAll(this);
         this.set({
           test: "another thing"
         });
       }
-      Home.prototype.url = 'http://troybrinkerhoff.com/new2/galleries.php';
-      Home.prototype.loadGalleriesSuccess = function(data) {
-        console.log(this);
-        console.log('test');
-        console.log(this.attributes);
+      HomeModel.prototype.url = 'http://troybrinkerhoff.com/new2/galleries.php';
+      HomeModel.prototype.loadGalleriesSuccess = function(data) {
+        console.log(data);
         return this.set({
           "galleries": data
         });
       };
-      Home.prototype.loadGalleries = function() {
+      HomeModel.prototype.loadGalleries = function() {
         return $.ajax({
           type: "GET",
           url: "http://troybrinkerhoff.com/new2/galleries.php",
@@ -116,12 +116,13 @@
           success: this.loadGalleriesSuccess
         });
       };
-      return Home;
+      return HomeModel;
     })();
     ImagePanelView = (function() {
       __extends(ImagePanelView, Backbone.View);
       function ImagePanelView() {
         ImagePanelView.__super__.constructor.apply(this, arguments);
+        this.el = div("");
         _.bindAll(this);
       }
       ImagePanelView.prototype.addImage = function(url, css, meta) {
@@ -137,11 +138,13 @@
       return ImagePanelView;
     })();
     HorizontalSliderView = (function() {
-      __extends(HorizontalSliderView, Backbone.Model);
+      __extends(HorizontalSliderView, Backbone.View);
       function HorizontalSliderView(width, height) {
         this.width = width != null ? width : 300;
-        this.height = height != null ? height : 500;
+        this.height = height != null ? height : 300;
         HorizontalSliderView.__super__.constructor.apply(this, arguments);
+        _.bindAll(this);
+        this.el = div("");
         this.el.css({
           width: "" + this.width + "px",
           height: "" + this.height + "px",
@@ -154,26 +157,25 @@
         this.slideWrapper.css({
           position: "absolute"
         });
-        this.el.append(this.slideWrapper);
+        $(this.el).append(this.slideWrapper);
         this.panelCount = 0;
-        _.bindAll(this);
         return this;
       }
       HorizontalSliderView.prototype.goto = function(index) {
         var translateX;
         if (z.browser.webkit) {
-          translateX = -1 * (index * e.width);
+          translateX = -1 * (index * this.width);
           return z(this.slideWrapper[0]).anim({
             "translateX": translateX + "px"
           });
         } else {
           return $(this.slideWrapper).animate({
-            "left": (-1 * (index * e.width)) + "px"
+            "left": (-1 * (index * this.width)) + "px"
           });
         }
       };
       HorizontalSliderView.prototype.addPanel = function(panelView) {
-        var count, panelEl, panelWrapper, thisSlider;
+        var count, panelEl, panelWrapper;
         this.panelCount++;
         count = this.panelCount;
         if (!panelView) {
@@ -186,13 +188,12 @@
           height: "" + this.height + "px",
           position: "absolute",
           top: "0",
-          left: (e.panelCount - 1) * e.width
+          left: (this.panelCount - 1) * this.width
         });
         panelWrapper.append(panelEl);
-        thisSlider = this;
-        panelWrapper.bind("click", function(event) {
-          return thisSlider.panelWrapperClick(count - 1);
-        });
+        panelWrapper.bind("click", __bind(function(event) {
+          return this.panelWrapperClick(count - 1);
+        }, this));
         $(this.slideWrapper).css({
           "width": (this.panelCount * this.width) + "px"
         });
@@ -205,16 +206,18 @@
     })();
     HomeView = (function() {
       function HomeView() {
-        HomeView.__super__.constructor.apply(this, arguments);
+        this.triggerLinkClick = __bind(this.triggerLinkClick, this);;
+        this.triggerMainLogoClick = __bind(this.triggerMainLogoClick, this);;        HomeView.__super__.constructor.apply(this, arguments);
       }
       __extends(HomeView, Backbone.View);
-      HomeView.prototype.initialize = function(e) {
+      HomeView.prototype.initialize = function() {
         HomeView.__super__.initialize.apply(this, arguments);
         _.bindAll(this);
         this.thumbsWidth = 200;
         this.el = $('#home-wrapper');
         this.state = "home";
         this.thumbGroupings = [];
+        $('#main-logo').click(this.triggerMainLogoClick);
         this.thumbsView = new HorizontalSliderView(this.thumbsWidth, 640);
         return $('#thumbs').append(this.thumbsView.el);
       };
@@ -228,26 +231,26 @@
         return this.el.find("#links").empty();
       };
       HomeView.prototype.addNavLink = function(linkName, linkAddress) {
-        var a, that;
+        var a;
         a = $("<a class='nav' href='#'>" + linkName + "</a>");
-        that = this;
-        a.bind("click", function(event) {
+        a.bind("click", __bind(function(event) {
           event.preventDefault();
-          return that.triggerLinkClick(linkName);
-        });
-        return e.el.find("#links").append(a);
+          return this.triggerLinkClick(linkName);
+        }, this));
+        return this.el.find("#links").append(a);
       };
       HomeView.prototype.triggerLinkClick = function(linkName) {
         return this.trigger("link", linkName);
       };
-      HomeView.prototype.loadViewerImage = function(e, url) {
+      HomeView.prototype.loadViewerImage = function(url) {
         return $("#viewer-img").attr("src", url);
       };
       HomeView.prototype.addImage = function(urls) {
         return;
       };
-      HomeView.prototype.slideThumbnails = function(e, outOrIn) {
+      HomeView.prototype.slideThumbnails = function(outOrIn) {
         var right, translate;
+        console.log("sliding thumbnails " + outOrIn);
         if (outOrIn === "out") {
           translate = "-" + this.thumbsWidth + "px";
           right = 0;
@@ -265,7 +268,7 @@
           });
         }
       };
-      HomeView.prototype.slideBanner = function(e, upOrDown) {
+      HomeView.prototype.slideBanner = function(upOrDown) {
         var bottom, translate;
         if (upOrDown === "down") {
           translate = "50px";
@@ -286,10 +289,72 @@
       };
       return HomeView;
     })();
-    home = new Home({
-      test: "something"
-    });
-    console.log(home);
-    return home.loadGalleries();
+    HomePresenter = (function() {
+      function HomePresenter() {
+        this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);;
+        this.handleLinkClick = __bind(this.handleLinkClick, this);;        _.bindAll(this);
+        this.model = new HomeModel;
+        this.view = new HomeView;
+        this.imgCss = {
+          width: "43px",
+          height: "43px"
+        };
+        this.model.bind("change:galleries", this.handleGalleriesChange);
+        this.view.bind("link", this.handleLinkClick);
+        this.model.loadGalleries();
+      }
+      HomePresenter.prototype.handleLinkClick = function(linkName) {
+        var gallery_name;
+        if (linkName === this.view.galleryState) {
+          return;
+        }
+        this.view.galleryState = linkName;
+        this.view.slideThumbnails("out");
+        this.view.slideBanner("down");
+        gallery_name = "gallery_" + linkName.toLowerCase();
+        this.view.thumbsView.goto(this.linkPanelMap[linkName]);
+        return this.view.bind("homeclick", __bind(function() {
+          this.view.galleryState = "";
+          this.view.slideThumbnails("in");
+          return this.view.slideBanner("up");
+        }, this));
+      };
+      HomePresenter.prototype.handleGalleriesChange = function(event) {
+        var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _len, _ref, _ref2, _results;
+        this.view.clearNavLinks();
+        this.linkPanelMap = {};
+        galleryIndex = 0;
+        _ref = this.model.get("galleries");
+        _results = [];
+        for (gallery in _ref) {
+          info = _ref[gallery];
+          linkName = k.capitalize(k(gallery).s("gallery_".length));
+          console.log(linkName);
+          this.view.addNavLink(linkName, "#");
+          imagePanel = new ImagePanelView;
+          imagePanel.linkName = linkName;
+          imagePanel.bind("click", __bind(function(meta) {
+            return this.view.setImage(meta.image);
+          }, this));
+          _ref2 = info.images;
+          for (index = 0, _len = _ref2.length; index < _len; index++) {
+            image = _ref2[index];
+            thumb = info.thumbs[index];
+            meta = {
+              image: image,
+              thumb: thumb,
+              linkName: linkName
+            };
+            imagePanel.addImage(thumb, this.imgCss, meta);
+          }
+          this.view.thumbsView.addPanel(imagePanel);
+          this.linkPanelMap[linkName] = galleryIndex;
+          _results.push(galleryIndex++);
+        }
+        return _results;
+      };
+      return HomePresenter;
+    })();
+    return app = new HomePresenter;
   });
 }).call(this);
