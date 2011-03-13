@@ -50,23 +50,74 @@
     class SlideShowView extends Backbone.View
       constructor: () ->
         @el = div ""
+        @el.addClass "slide-show-yea"
         @width = 960
         @height = 460
         @timer = ""
-        @interval = 4
+        @interval = 6000
+        @fadeSpeed = 4000
         @el.css position: "relative"
+        @indexCount = 0
+        @index = 0
+        @hidden = false
       addPicture: (url) ->
         image = $ document.createElement "img"
+        image.load () ->
+          image.attr "data-loaded", "true"
         image.attr 'src', url
+        image.attr 'data-index', @indexCount
+        image.css
+          width: "#{@width}px"
         @el.append image
-        @el.css
+        image.css
           position: 'absolute'
           top: 0
           left: 0
+          display: "none"
+        @indexCount++
+      
       nextPicture: () ->
+        @el.find("img:visible").fadeOut(@fadeSpeed)
+        @el.find("[data-index=#{@index}]").fadeIn(@fadeSpeed)
+        @incIndex()
       prevPicture: () ->
-      pause: () ->
-      start: () ->
+        @el.find("img:visible").fadeOut(@fadeSpeed)
+        @el.find("[data-index=#{@index}]").fadeIn(@fadeSpeed)
+        @decIndex()
+      decIndex: () =>
+        @index--
+        if @index <= 0
+          @index = @indexCount
+      incIndex: () =>
+        @index++
+        if @index >= @indexCount
+          @index = 0
+      hide: () =>
+        clearTimeout @timeout
+        @el.hide()
+        @hidden = true
+      show: () =>
+        @el.show()
+        @hidden = false
+      tick: () =>
+        console.log "tick"
+        img1 = @el.find("[data-index=#{@index}]")
+        if @index == 0 or img1.attr("data-loaded") is "true"
+          @nextPicture()
+          @timeout = setTimeout @tick, @interval
+        else
+          1
+          @timeout = setTimeout @tick, @interval
+            
+        
+      pause: () =>
+        clearTimeout @timeout
+      start: () =>
+        clearTimeout @timeout
+        @timeout = setTimeout @tick, @interval
+      init: () =>
+        @tick()
+        
         
     window.stater = (states) ->
       stateId = 0
@@ -84,6 +135,7 @@
         @images = {}
         @currentImage = $ @make "img"
         @loading = div "Loading..."
+        @loading.css margin: "50px"
 
         @loadingStater = stater ["Loading", "Loading.", "Loading..", "Loading..."]
         @loading.css color: "white", position: "absolute", top: 0, left: 0, "display": "none"
@@ -108,6 +160,7 @@
         @el.append image.el
         image.el.attr "src", image.url
         image.el.load () =>
+          @el.find('img:visible').fadeOut()
           image.loaded = true
           image.el.fadeIn()
           @currentImage = image.el
@@ -181,6 +234,7 @@
         super
         _.bindAll this
         @el = div ""
+        @el.addClass "horizontal-slider-view"
         @el.css
           width: "#{@width}px"
           height: "#{@height}px"
@@ -192,8 +246,15 @@
         @slideWrapper.css position: "absolute"
         $(@el).append @slideWrapper
         @panelCount = 0
+        @currentPanel = 0
         return this
+      currentPanelEl: () =>
+        ret =  @el.find("[data-index='#{@currentPanel}']")
+        return ret
+
       goto: (index) ->
+        console.log index
+        @currentPanel = index
         if z.browser.webkit
           translateX =  (-1 * (index * @width)) 
           z(@slideWrapper[0]).anim "translateX" : translateX + "px"
@@ -207,6 +268,9 @@
           panelView = $ "<div>"
         panelEl = getEl panelView
         panelWrapper = $ "<div>"
+        panelWrapper.addClass "panel"
+        panelWrapper.attr "data-index", @panelCount - 1
+        panelWrapper.addClass "panel"
         panelWrapper.css 
           width: "#{@width}px"
           height: "#{@height}px"
@@ -242,14 +306,19 @@
         @imageDisplayer.showImage url
       clearNavLinks: () ->
         @el.find("#links").empty()
-      addNavLink: (linkName, linkAddress) ->
-        a = $ "<a class='nav' href='#'>#{linkName}</a>"
+      addNavLink: (linkName, linkAddress='#', type) ->
+        a = $ "<a class='nav' href='#{linkAddress}'>#{linkName}</a>"
+        @el.find("#links").append a
+        if type is "normal"
+          return
         a.bind "click", (event) =>
           event.preventDefault();
           @triggerLinkClick linkName
-        @el.find("#links").append a
       triggerLinkClick: (linkName) =>
         @trigger "link", linkName
+      displayFirstImage: () =>
+        @thumbsView.currentPanelEl().find("img:first").click()
+        console.log  @thumbsView.currentPanelEl()
         
       addImage: (urls) ->
         return
@@ -266,16 +335,22 @@
         else
           $('#thumbs').animate({right: right})
       slideBanner: (upOrDown) ->
-        if upOrDown is "down"
-          translate = "50px"
-          bottom = 0
+        slideAmt = 550
+        if upOrDown is "up"
+          translate = "-#{slideAmt}px"
+          top = 0
         else
           translate = 0
-          bottom = "50px"
+          top = "#{slideAmt}px"
         if z.browser.webkit
           z("#banner").anim "translateY" : translate
         else
-          $("#banner").animate "bottom" : bottom
+          $("#banner").animate "top" : top
+      hideViewer: () =>
+        $('#viewer').hide()
+
+      showViewer: () =>
+        $('#viewer').show()
 
     class ManyImagesView extends Backbone.View
       # not used
@@ -308,9 +383,9 @@
     class HomePresenter
       constructor: () ->
         _.bindAll this
-        #slideshow = k.new SlideShowView
-        #p(slideshow).addPicture "http://troybrinkerhoff.com/gallery_couples/images/13.jpg"
-        #$(document.body).append slideshow.el
+
+        @slideShow = new SlideShowView
+        $('#home-wrapper').append @slideShow.el
         @model = new HomeModel
         @view = new HomeView
         @imgCss =
@@ -318,29 +393,34 @@
           height: "43px"
           opacity: "0.5"
         @model.bind "change:galleries", @handleGalleriesChange
-            
-        
         @view.bind "link", @handleLinkClick
-          
         @model.loadGalleries()
-
-
+        @view.bind "homeclick", () =>
+          @view.hideViewer()
+          @slideShow.show()
+          @slideShow.start()
+          @view.galleryState =  ""
+          @view.slideThumbnails "in"
+          @view.slideBanner "down"
       handleLinkClick: (linkName) =>
+        if @slideShow.hidden == false
+          @slideShow.hide()
+          @view.showViewer()
         if linkName is @view.galleryState
           return
         @view.galleryState = linkName
         @view.slideThumbnails "out"
-        @view.slideBanner "down"
+        @view.slideBanner "up"
         gallery_name = "gallery_" + linkName.toLowerCase() 
         @view.thumbsView.goto @linkPanelMap[linkName]
+        @view.displayFirstImage() 
 
-        @view.bind "homeclick", () =>
-          @view.galleryState =  ""
-          @view.slideThumbnails "in"
-          @view.slideBanner "up"
       handleImagePanelImageClicked: (meta) =>
         @view.setImage meta.image
       handleGalleriesChange: (event ) =>
+        for image in @model.get("galleries").gallery_test.images
+          @slideShow.addPicture image
+        @slideShow.init()
         @view.clearNavLinks()
         @linkPanelMap = {}
         galleryIndex = 0
@@ -359,6 +439,8 @@
           @view.thumbsView.addPanel imagePanel
           @linkPanelMap[linkName] = galleryIndex
           galleryIndex++
+        @view.addNavLink "Online Viewing", "http://troybrinkerhoff.com/onlineviewing/", "normal"
+
 
     app = new HomePresenter
 

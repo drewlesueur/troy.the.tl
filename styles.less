@@ -13,6 +13,10 @@ body {
  width: 760px;
 }
 
+.panel {
+  margin-top: 60px;  
+}
+
 .shadowy {
   -webkit-box-shadow: 0px 0px 5px #000;
   -moz-box-shadow: 0px 0px 5px #000;
@@ -34,6 +38,7 @@ body {
   height: 43px;
 }
 #thumbs {
+  z-index: 990;
   @width: 200px;
   right: -1 * @width;
   .absolute;
@@ -57,6 +62,7 @@ body {
 }
 
 #home-wrapper {
+  margin-top: 5%;
   position: relative;
   width: 960px;
   height: 640px;
@@ -65,10 +71,11 @@ body {
 }
 
 #banner {
+  z-index: 1000;
   width: 960px;
   .shadowy;
   .absolute;
-  bottom: 50px;
+  top: 550px;
   padding-top: 10px;
   padding-bottom: 10px;
   background-color: black;

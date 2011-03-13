@@ -1,13 +1,13 @@
 (function() {
   var div, getEl, img;
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
     ctor.prototype = parent.prototype;
     child.prototype = new ctor;
     child.__super__ = parent.prototype;
     return child;
-  }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  };
   _.mixin({
     s: function(val, start, end) {
       var need_to_join, ret;
@@ -64,30 +64,100 @@
     SlideShowView = (function() {
       __extends(SlideShowView, Backbone.View);
       function SlideShowView() {
-        this.el = div("");
+        this.init = __bind(this.init, this);;
+        this.start = __bind(this.start, this);;
+        this.pause = __bind(this.pause, this);;
+        this.tick = __bind(this.tick, this);;
+        this.show = __bind(this.show, this);;
+        this.hide = __bind(this.hide, this);;
+        this.incIndex = __bind(this.incIndex, this);;
+        this.decIndex = __bind(this.decIndex, this);;        this.el = div("");
+        this.el.addClass("slide-show-yea");
         this.width = 960;
         this.height = 460;
         this.timer = "";
-        this.interval = 4;
+        this.interval = 6000;
+        this.fadeSpeed = 4000;
         this.el.css({
           position: "relative"
         });
+        this.indexCount = 0;
+        this.index = 0;
+        this.hidden = false;
       }
       SlideShowView.prototype.addPicture = function(url) {
         var image;
         image = $(document.createElement("img"));
+        image.load(function() {
+          return image.attr("data-loaded", "true");
+        });
         image.attr('src', url);
+        image.attr('data-index', this.indexCount);
+        image.css({
+          width: "" + this.width + "px"
+        });
         this.el.append(image);
-        return this.el.css({
+        image.css({
           position: 'absolute',
           top: 0,
-          left: 0
+          left: 0,
+          display: "none"
         });
+        return this.indexCount++;
       };
-      SlideShowView.prototype.nextPicture = function() {};
-      SlideShowView.prototype.prevPicture = function() {};
-      SlideShowView.prototype.pause = function() {};
-      SlideShowView.prototype.start = function() {};
+      SlideShowView.prototype.nextPicture = function() {
+        this.el.find("img:visible").fadeOut(this.fadeSpeed);
+        this.el.find("[data-index=" + this.index + "]").fadeIn(this.fadeSpeed);
+        return this.incIndex();
+      };
+      SlideShowView.prototype.prevPicture = function() {
+        this.el.find("img:visible").fadeOut(this.fadeSpeed);
+        this.el.find("[data-index=" + this.index + "]").fadeIn(this.fadeSpeed);
+        return this.decIndex();
+      };
+      SlideShowView.prototype.decIndex = function() {
+        this.index--;
+        if (this.index <= 0) {
+          return this.index = this.indexCount;
+        }
+      };
+      SlideShowView.prototype.incIndex = function() {
+        this.index++;
+        if (this.index >= this.indexCount) {
+          return this.index = 0;
+        }
+      };
+      SlideShowView.prototype.hide = function() {
+        clearTimeout(this.timeout);
+        this.el.hide();
+        return this.hidden = true;
+      };
+      SlideShowView.prototype.show = function() {
+        this.el.show();
+        return this.hidden = false;
+      };
+      SlideShowView.prototype.tick = function() {
+        var img1;
+        console.log("tick");
+        img1 = this.el.find("[data-index=" + this.index + "]");
+        if (this.index === 0 || img1.attr("data-loaded") === "true") {
+          this.nextPicture();
+          return this.timeout = setTimeout(this.tick, this.interval);
+        } else {
+          1;
+          return this.timeout = setTimeout(this.tick, this.interval);
+        }
+      };
+      SlideShowView.prototype.pause = function() {
+        return clearTimeout(this.timeout);
+      };
+      SlideShowView.prototype.start = function() {
+        clearTimeout(this.timeout);
+        return this.timeout = setTimeout(this.tick, this.interval);
+      };
+      SlideShowView.prototype.init = function() {
+        return this.tick();
+      };
       return SlideShowView;
     })();
     window.stater = function(states) {
@@ -112,6 +182,9 @@
         this.images = {};
         this.currentImage = $(this.make("img"));
         this.loading = div("Loading...");
+        this.loading.css({
+          margin: "50px"
+        });
         this.loadingStater = stater(["Loading", "Loading.", "Loading..", "Loading..."]);
         this.loading.css({
           color: "white",
@@ -149,6 +222,7 @@
         this.el.append(image.el);
         image.el.attr("src", image.url);
         return image.el.load(__bind(function() {
+          this.el.find('img:visible').fadeOut();
           image.loaded = true;
           image.el.fadeIn();
           this.currentImage = image.el;
@@ -239,9 +313,11 @@
       function HorizontalSliderView(width, height) {
         this.width = width != null ? width : 300;
         this.height = height != null ? height : 300;
+        this.currentPanelEl = __bind(this.currentPanelEl, this);;
         HorizontalSliderView.__super__.constructor.apply(this, arguments);
         _.bindAll(this);
         this.el = div("");
+        this.el.addClass("horizontal-slider-view");
         this.el.css({
           width: "" + this.width + "px",
           height: "" + this.height + "px",
@@ -256,10 +332,18 @@
         });
         $(this.el).append(this.slideWrapper);
         this.panelCount = 0;
+        this.currentPanel = 0;
         return this;
       }
+      HorizontalSliderView.prototype.currentPanelEl = function() {
+        var ret;
+        ret = this.el.find("[data-index='" + this.currentPanel + "']");
+        return ret;
+      };
       HorizontalSliderView.prototype.goto = function(index) {
         var translateX;
+        console.log(index);
+        this.currentPanel = index;
         if (z.browser.webkit) {
           translateX = -1 * (index * this.width);
           return z(this.slideWrapper[0]).anim({
@@ -280,6 +364,9 @@
         }
         panelEl = getEl(panelView);
         panelWrapper = $("<div>");
+        panelWrapper.addClass("panel");
+        panelWrapper.attr("data-index", this.panelCount - 1);
+        panelWrapper.addClass("panel");
         panelWrapper.css({
           width: "" + this.width + "px",
           height: "" + this.height + "px",
@@ -303,6 +390,9 @@
     })();
     HomeView = (function() {
       function HomeView() {
+        this.showViewer = __bind(this.showViewer, this);;
+        this.hideViewer = __bind(this.hideViewer, this);;
+        this.displayFirstImage = __bind(this.displayFirstImage, this);;
         this.triggerLinkClick = __bind(this.triggerLinkClick, this);;
         this.triggerMainLogoClick = __bind(this.triggerMainLogoClick, this);;        HomeView.__super__.constructor.apply(this, arguments);
       }
@@ -328,17 +418,27 @@
       HomeView.prototype.clearNavLinks = function() {
         return this.el.find("#links").empty();
       };
-      HomeView.prototype.addNavLink = function(linkName, linkAddress) {
+      HomeView.prototype.addNavLink = function(linkName, linkAddress, type) {
         var a;
-        a = $("<a class='nav' href='#'>" + linkName + "</a>");
-        a.bind("click", __bind(function(event) {
+        if (linkAddress == null) {
+          linkAddress = '#';
+        }
+        a = $("<a class='nav' href='" + linkAddress + "'>" + linkName + "</a>");
+        this.el.find("#links").append(a);
+        if (type === "normal") {
+          return;
+        }
+        return a.bind("click", __bind(function(event) {
           event.preventDefault();
           return this.triggerLinkClick(linkName);
         }, this));
-        return this.el.find("#links").append(a);
       };
       HomeView.prototype.triggerLinkClick = function(linkName) {
         return this.trigger("link", linkName);
+      };
+      HomeView.prototype.displayFirstImage = function() {
+        this.thumbsView.currentPanelEl().find("img:first").click();
+        return console.log(this.thumbsView.currentPanelEl());
       };
       HomeView.prototype.addImage = function(urls) {
         return;
@@ -364,13 +464,14 @@
         }
       };
       HomeView.prototype.slideBanner = function(upOrDown) {
-        var bottom, translate;
-        if (upOrDown === "down") {
-          translate = "50px";
-          bottom = 0;
+        var slideAmt, top, translate;
+        slideAmt = 550;
+        if (upOrDown === "up") {
+          translate = "-" + slideAmt + "px";
+          top = 0;
         } else {
           translate = 0;
-          bottom = "50px";
+          top = "" + slideAmt + "px";
         }
         if (z.browser.webkit) {
           return z("#banner").anim({
@@ -378,9 +479,15 @@
           });
         } else {
           return $("#banner").animate({
-            "bottom": bottom
+            "top": top
           });
         }
+      };
+      HomeView.prototype.hideViewer = function() {
+        return $('#viewer').hide();
+      };
+      HomeView.prototype.showViewer = function() {
+        return $('#viewer').show();
       };
       return HomeView;
     })();
@@ -419,6 +526,8 @@
         this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);;
         this.handleImagePanelImageClicked = __bind(this.handleImagePanelImageClicked, this);;
         this.handleLinkClick = __bind(this.handleLinkClick, this);;        _.bindAll(this);
+        this.slideShow = new SlideShowView;
+        $('#home-wrapper').append(this.slideShow.el);
         this.model = new HomeModel;
         this.view = new HomeView;
         this.imgCss = {
@@ -429,35 +538,48 @@
         this.model.bind("change:galleries", this.handleGalleriesChange);
         this.view.bind("link", this.handleLinkClick);
         this.model.loadGalleries();
+        this.view.bind("homeclick", __bind(function() {
+          this.view.hideViewer();
+          this.slideShow.show();
+          this.slideShow.start();
+          this.view.galleryState = "";
+          this.view.slideThumbnails("in");
+          return this.view.slideBanner("down");
+        }, this));
       }
       HomePresenter.prototype.handleLinkClick = function(linkName) {
         var gallery_name;
+        if (this.slideShow.hidden === false) {
+          this.slideShow.hide();
+          this.view.showViewer();
+        }
         if (linkName === this.view.galleryState) {
           return;
         }
         this.view.galleryState = linkName;
         this.view.slideThumbnails("out");
-        this.view.slideBanner("down");
+        this.view.slideBanner("up");
         gallery_name = "gallery_" + linkName.toLowerCase();
         this.view.thumbsView.goto(this.linkPanelMap[linkName]);
-        return this.view.bind("homeclick", __bind(function() {
-          this.view.galleryState = "";
-          this.view.slideThumbnails("in");
-          return this.view.slideBanner("up");
-        }, this));
+        return this.view.displayFirstImage();
       };
       HomePresenter.prototype.handleImagePanelImageClicked = function(meta) {
         return this.view.setImage(meta.image);
       };
       HomePresenter.prototype.handleGalleriesChange = function(event) {
-        var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _len, _ref, _ref2, _results;
+        var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _i, _len, _len2, _ref, _ref2, _ref3;
+        _ref = this.model.get("galleries").gallery_test.images;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          image = _ref[_i];
+          this.slideShow.addPicture(image);
+        }
+        this.slideShow.init();
         this.view.clearNavLinks();
         this.linkPanelMap = {};
         galleryIndex = 0;
-        _ref = this.model.get("galleries");
-        _results = [];
-        for (gallery in _ref) {
-          info = _ref[gallery];
+        _ref2 = this.model.get("galleries");
+        for (gallery in _ref2) {
+          info = _ref2[gallery];
           linkName = k.capitalize(k(gallery).s("gallery_".length));
           console.log(linkName);
           this.view.addNavLink(linkName, "#");
@@ -466,9 +588,9 @@
           imagePanel.bind("click", __bind(function(meta) {
             return this.handleImagePanelImageClicked(meta);
           }, this));
-          _ref2 = info.images;
-          for (index = 0, _len = _ref2.length; index < _len; index++) {
-            image = _ref2[index];
+          _ref3 = info.images;
+          for (index = 0, _len2 = _ref3.length; index < _len2; index++) {
+            image = _ref3[index];
             thumb = info.thumbs[index];
             meta = {
               image: image,
@@ -479,9 +601,9 @@
           }
           this.view.thumbsView.addPanel(imagePanel);
           this.linkPanelMap[linkName] = galleryIndex;
-          _results.push(galleryIndex++);
+          galleryIndex++;
         }
-        return _results;
+        return this.view.addNavLink("Online Viewing", "http://troybrinkerhoff.com/onlineviewing/", "normal");
       };
       return HomePresenter;
     })();
