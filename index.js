@@ -59,7 +59,7 @@
     window.console.log = function() {};
   }
   $(document).ready(function() {
-    var HomeModel, HomePresenter, HomeView, HorizontalSliderView, ImagePanelView, SlideShowView, app;
+    var HomeModel, HomePresenter, HomeView, HorizontalSliderView, ImageDisplayerView, ImagePanelView, ManyImagesView, SlideShowView, app;
     console.log("ready");
     SlideShowView = (function() {
       __extends(SlideShowView, Backbone.View);
@@ -89,6 +89,73 @@
       SlideShowView.prototype.pause = function() {};
       SlideShowView.prototype.start = function() {};
       return SlideShowView;
+    })();
+    window.stater = function(states) {
+      var ret, stateId;
+      stateId = 0;
+      ret = function() {
+        var ret1;
+        ret1 = states[stateId];
+        stateId++;
+        if (stateId === states.length) {
+          stateId = 0;
+        }
+        return ret1;
+      };
+      return ret;
+    };
+    ImageDisplayerView = (function() {
+      __extends(ImageDisplayerView, Backbone.View);
+      function ImageDisplayerView(parent) {
+        this.showImage = __bind(this.showImage, this);;
+        this.updateLoader = __bind(this.updateLoader, this);;        this.el = parent || div("");
+        this.images = {};
+        this.currentImage = $(this.make("img"));
+        this.loading = div("Loading...");
+        this.loadingStater = stater(["Loading", "Loading.", "Loading..", "Loading..."]);
+        this.loading.css({
+          color: "white",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          "display": "none"
+        });
+        this.el.append(this.loading);
+        this.loadingTimer = setInterval(this.updateLoader, 250);
+      }
+      ImageDisplayerView.prototype.updateLoader = function() {
+        return this.loading.html(this.loadingStater());
+      };
+      ImageDisplayerView.prototype.showImage = function(url) {
+        var image;
+        console.log("showing image of " + url);
+        this.loading.show();
+        this.el.find('img:visible').fadeOut();
+        if (url in this.images) {
+          this.images[url].el.fadeIn();
+          return;
+        }
+        image = {
+          url: url,
+          el: $(this.make("img")),
+          loaded: false
+        };
+        image.el.css({
+          position: "absolute",
+          top: 0,
+          left: 0,
+          display: "none"
+        });
+        this.el.append(image.el);
+        image.el.attr("src", image.url);
+        return image.el.load(__bind(function() {
+          image.loaded = true;
+          image.el.fadeIn();
+          this.currentImage = image.el;
+          return this.loading.hide();
+        }, this));
+      };
+      return ImageDisplayerView;
     })();
     Backbone.emulateHTTP = true;
     HomeModel = (function() {
@@ -121,19 +188,49 @@
     ImagePanelView = (function() {
       __extends(ImagePanelView, Backbone.View);
       function ImagePanelView() {
-        ImagePanelView.__super__.constructor.apply(this, arguments);
+        this.triggerClick = __bind(this.triggerClick, this);;        ImagePanelView.__super__.constructor.apply(this, arguments);
         this.el = div("");
         _.bindAll(this);
       }
       ImagePanelView.prototype.addImage = function(url, css, meta) {
-        img = $(document.createElement("img"));
-        img.attr("src", url);
-        img.css(css);
-        this.el.append(img);
-        return img.bind("click", this.triggerClick);
+        var img1;
+        if (k.s(url, -2) === "db") {
+          return;
+        }
+        img1 = $(document.createElement("img"));
+        img1.attr("src", url);
+        img1.css(css);
+        meta.img = img1;
+        this.el.append(img1);
+        img1.bind("click", __bind(function(event) {
+          this.triggerClick(meta);
+          this.el.find("img").css({
+            opacity: 0.5
+          });
+          this.el.find('[data-active=true]').removeAttr('data-active');
+          img1.attr("data-active", 'true');
+          return img1.css({
+            "opacity": 1
+          });
+        }, this));
+        img1.bind("mouseover", __bind(function(event) {
+          return img1.css({
+            "opacity": 1
+          });
+        }, this));
+        return img1.bind({
+          "mouseout": __bind(function(event) {
+            console.log;
+            if (img1.attr("data-active") !== 'true') {
+              return img1.css({
+                "opacity": 0.5
+              });
+            }
+          }, this)
+        });
       };
-      ImagePanelView.prototype.triggerClick = function() {
-        return this.trigger("click", this.meta);
+      ImagePanelView.prototype.triggerClick = function(meta) {
+        return this.trigger("click", meta);
       };
       return ImagePanelView;
     })();
@@ -219,13 +316,14 @@
         this.thumbGroupings = [];
         $('#main-logo').click(this.triggerMainLogoClick);
         this.thumbsView = new HorizontalSliderView(this.thumbsWidth, 640);
-        return $('#thumbs').append(this.thumbsView.el);
+        $('#thumbs').append(this.thumbsView.el);
+        return this.imageDisplayer = new ImageDisplayerView($('#viewer'));
       };
       HomeView.prototype.triggerMainLogoClick = function() {
         return this.trigger("homeclick");
       };
       HomeView.prototype.setImage = function(url) {
-        return $("#viewer-img").attr("src", url);
+        return this.imageDisplayer.showImage(url);
       };
       HomeView.prototype.clearNavLinks = function() {
         return this.el.find("#links").empty();
@@ -241,9 +339,6 @@
       };
       HomeView.prototype.triggerLinkClick = function(linkName) {
         return this.trigger("link", linkName);
-      };
-      HomeView.prototype.loadViewerImage = function(url) {
-        return $("#viewer-img").attr("src", url);
       };
       HomeView.prototype.addImage = function(urls) {
         return;
@@ -289,15 +384,47 @@
       };
       return HomeView;
     })();
+    ManyImagesView = (function() {
+      __extends(ManyImagesView, Backbone.View);
+      function ManyImagesView() {
+        this.loadSpecific = __bind(this.loadSpecific, this);;
+        this.addImage = __bind(this.addImage, this);;        ManyImagesView.__super__.constructor.apply(this, arguments);
+        this.images = [];
+      }
+      ManyImagesView.prototype.addImage = function(url) {
+        var image;
+        image = {
+          loaded: false,
+          url: url,
+          el: $(this.make("img")),
+          onload: function() {}
+        };
+        this.images.push(image);
+        return image.el.load(__bind(function() {
+          image.loaded = true;
+          this.index++;
+          return this.loadSpecific;
+        }, this));
+      };
+      ManyImagesView.prototype.kickOffLoading = function() {};
+      ManyImagesView.prototype.loadSpecific = function() {
+        var image;
+        image = this.images[this.index];
+        return image.el.attr("src", image.url);
+      };
+      return ManyImagesView;
+    })();
     HomePresenter = (function() {
       function HomePresenter() {
         this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);;
+        this.handleImagePanelImageClicked = __bind(this.handleImagePanelImageClicked, this);;
         this.handleLinkClick = __bind(this.handleLinkClick, this);;        _.bindAll(this);
         this.model = new HomeModel;
         this.view = new HomeView;
         this.imgCss = {
           width: "43px",
-          height: "43px"
+          height: "43px",
+          opacity: "0.5"
         };
         this.model.bind("change:galleries", this.handleGalleriesChange);
         this.view.bind("link", this.handleLinkClick);
@@ -319,6 +446,9 @@
           return this.view.slideBanner("up");
         }, this));
       };
+      HomePresenter.prototype.handleImagePanelImageClicked = function(meta) {
+        return this.view.setImage(meta.image);
+      };
       HomePresenter.prototype.handleGalleriesChange = function(event) {
         var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _len, _ref, _ref2, _results;
         this.view.clearNavLinks();
@@ -334,7 +464,7 @@
           imagePanel = new ImagePanelView;
           imagePanel.linkName = linkName;
           imagePanel.bind("click", __bind(function(meta) {
-            return this.view.setImage(meta.image);
+            return this.handleImagePanelImageClicked(meta);
           }, this));
           _ref2 = info.images;
           for (index = 0, _len = _ref2.length; index < _len; index++) {

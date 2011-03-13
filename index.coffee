@@ -67,6 +67,57 @@
       prevPicture: () ->
       pause: () ->
       start: () ->
+        
+    window.stater = (states) ->
+      stateId = 0
+      ret = () ->
+        ret1 = states[stateId] 
+        stateId++
+        if stateId == states.length then stateId = 0
+        return ret1
+      return ret
+
+
+    class ImageDisplayerView extends Backbone.View
+      constructor: (parent) ->
+        @el = parent || div ""
+        @images = {}
+        @currentImage = $ @make "img"
+        @loading = div "Loading..."
+
+        @loadingStater = stater ["Loading", "Loading.", "Loading..", "Loading..."]
+        @loading.css color: "white", position: "absolute", top: 0, left: 0, "display": "none"
+        @el.append @loading
+        @loadingTimer = setInterval @updateLoader, 250, 
+      updateLoader: () =>
+        @loading.html @loadingStater()
+      showImage: (url) =>
+        console.log "showing image of #{url}"
+        @loading.show()
+
+        @el.find('img:visible').fadeOut()
+        if url of @images
+          @images[url].el.fadeIn()
+          return
+
+        image = 
+          url: url
+          el: $ @make "img"
+          loaded: false
+        image.el.css position: "absolute", top: 0, left: 0, display: "none"
+        @el.append image.el
+        image.el.attr "src", image.url
+        image.el.load () =>
+          image.loaded = true
+          image.el.fadeIn()
+          @currentImage = image.el
+          @loading.hide()
+
+
+
+
+
+
 
     Backbone.emulateHTTP = true
 
@@ -96,13 +147,33 @@
         _.bindAll this
 
       addImage: (url, css, meta) ->
-        img = $ document.createElement "img"
-        img.attr "src", url
-        img.css css
-        @el.append img
-        img.bind "click", @triggerClick
-      triggerClick : () ->
-        @trigger "click", @meta
+        if k.s(url, -2) == "db"
+          return
+        img1 = $ document.createElement "img"
+        img1.attr "src", url
+        img1.css css
+        meta.img = img1
+        @el.append img1
+        img1.bind "click", (event) =>
+          @triggerClick meta
+          @el.find("img").css opacity: 0.5
+          @el.find('[data-active=true]').removeAttr 'data-active'
+          img1.attr("data-active", 'true')
+          img1.css
+            "opacity": 1
+
+        img1.bind "mouseover", (event) =>
+          img1.css 
+            "opacity": 1
+
+        img1.bind "mouseout": (event) =>
+          console.log 
+          if img1.attr("data-active") isnt 'true'
+            img1.css "opacity": 0.5
+
+
+      triggerClick : (meta) =>
+        @trigger "click", meta
 
 
     class HorizontalSliderView extends Backbone.View
@@ -164,10 +235,11 @@
           
         @thumbsView = new HorizontalSliderView @thumbsWidth, 640
         $('#thumbs').append @thumbsView.el
+        @imageDisplayer = new ImageDisplayerView $('#viewer')
       triggerMainLogoClick: () =>
         @trigger "homeclick"
       setImage: (url) ->
-        $("#viewer-img").attr "src", url
+        @imageDisplayer.showImage url
       clearNavLinks: () ->
         @el.find("#links").empty()
       addNavLink: (linkName, linkAddress) ->
@@ -179,8 +251,6 @@
       triggerLinkClick: (linkName) =>
         @trigger "link", linkName
         
-      loadViewerImage: (url) ->
-        $("#viewer-img").attr "src", url
       addImage: (urls) ->
         return
       slideThumbnails: (outOrIn) ->
@@ -207,6 +277,33 @@
         else
           $("#banner").animate "bottom" : bottom
 
+    class ManyImagesView extends Backbone.View
+      # not used
+      constructor: () ->
+        super
+
+        @images = []
+      addImage: (url) =>
+        image =
+          loaded: false
+          url: url
+          el: $ @make "img"
+          onload: () ->
+        @images.push image
+        image.el.load () =>
+          image.loaded = true
+          @index++
+          @loadSpecific
+      kickOffLoading: () ->
+      loadSpecific: () =>
+        image = @images[@index]
+        image.el.attr "src", image.url
+        
+        
+        
+        
+
+
 
     class HomePresenter
       constructor: () ->
@@ -219,6 +316,7 @@
         @imgCss =
           width: "43px"
           height: "43px"
+          opacity: "0.5"
         @model.bind "change:galleries", @handleGalleriesChange
             
         
@@ -240,7 +338,8 @@
           @view.galleryState =  ""
           @view.slideThumbnails "in"
           @view.slideBanner "up"
-
+      handleImagePanelImageClicked: (meta) =>
+        @view.setImage meta.image
       handleGalleriesChange: (event ) =>
         @view.clearNavLinks()
         @linkPanelMap = {}
@@ -251,8 +350,8 @@
           @view.addNavLink linkName, "#"
           imagePanel = new ImagePanelView
           imagePanel.linkName = linkName
-          imagePanel.bind "click", (meta) =>
-            @view.setImage meta.image
+          imagePanel.bind "click", (meta) => 
+            @handleImagePanelImageClicked(meta)
           for image, index in info.images
             thumb = info.thumbs[index]
             meta = image: image, thumb: thumb, linkName: linkName
