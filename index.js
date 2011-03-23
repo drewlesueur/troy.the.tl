@@ -59,8 +59,7 @@
     window.console.log = function() {};
   }
   $(document).ready(function() {
-    var HomeModel, HomePresenter, HomeView, HorizontalSliderView, ImageDisplayerView, ImagePanelView, ManyImagesView, SlideShowView, app;
-    console.log("ready");
+    var ContactFormView, HomeModel, HomePresenter, HomeView, HorizontalSliderView, ImageDisplayerView, ImagePanelView, ManyImagesView, SlideShowView, app;
     SlideShowView = (function() {
       __extends(SlideShowView, Backbone.View);
       function SlideShowView() {
@@ -138,7 +137,6 @@
       };
       SlideShowView.prototype.tick = function() {
         var img1;
-        console.log("tick");
         img1 = this.el.find("[data-index=" + this.index + "]");
         if (this.index === 0 || img1.attr("data-loaded") === "true") {
           this.nextPicture();
@@ -201,7 +199,6 @@
       };
       ImageDisplayerView.prototype.showImage = function(url) {
         var image;
-        console.log("showing image of " + url);
         this.loading.show();
         this.el.find('img:visible').fadeOut();
         if (url in this.images) {
@@ -231,6 +228,38 @@
       };
       return ImageDisplayerView;
     })();
+    ContactFormView = (function() {
+      __extends(ContactFormView, Backbone.View);
+      function ContactFormView() {
+        this.blur = __bind(this.blur, this);;        ContactFormView.__super__.constructor.apply(this, arguments);
+        this.el = $("#contact-form");
+        this.textarea = this.el.find('textarea');
+        this.textarea.bind('focus', __bind(function(event) {
+          return this.textarea.animate({
+            width: "300px",
+            height: "100px"
+          }, 200);
+        }, this));
+        this.el.bind("blur", __bind(function(event) {
+          return this.textarea.animate({
+            width: "100px",
+            height: "20px"
+          }, 200);
+        }, this));
+        this.el.bind("submit", __bind(function(event) {
+          event.preventDefault();
+          this.trigger("submitContactForm", {
+            email: this.el.find("#email").val(),
+            message: this.el.find('#message').val()
+          });
+          return false;
+        }, this));
+      }
+      ContactFormView.prototype.blur = function() {
+        return this.el.blur();
+      };
+      return ContactFormView;
+    })();
     Backbone.emulateHTTP = true;
     HomeModel = (function() {
       __extends(HomeModel, Backbone.Model);
@@ -244,7 +273,6 @@
       }
       HomeModel.prototype.url = 'http://troybrinkerhoff.com/new2/galleries.php';
       HomeModel.prototype.loadGalleriesSuccess = function(data) {
-        console.log(data);
         return this.set({
           "galleries": data
         });
@@ -273,6 +301,7 @@
         }
         img1 = $(document.createElement("img"));
         img1.attr("src", url);
+        img1.addClass("thumbnail-image");
         img1.css(css);
         meta.img = img1;
         this.el.append(img1);
@@ -294,7 +323,6 @@
         }, this));
         return img1.bind({
           "mouseout": __bind(function(event) {
-            console.log;
             if (img1.attr("data-active") !== 'true') {
               return img1.css({
                 "opacity": 0.5
@@ -342,7 +370,6 @@
       };
       HorizontalSliderView.prototype.goto = function(index) {
         var translateX;
-        console.log(index);
         this.currentPanel = index;
         if (z.browser.webkit) {
           translateX = -1 * (index * this.width);
@@ -407,7 +434,24 @@
         $('#main-logo').click(this.triggerMainLogoClick);
         this.thumbsView = new HorizontalSliderView(this.thumbsWidth, 640);
         $('#thumbs').append(this.thumbsView.el);
-        return this.imageDisplayer = new ImageDisplayerView($('#viewer'));
+        this.imageDisplayer = new ImageDisplayerView($('#viewer'));
+        this.contactFormView = new ContactFormView;
+        return this.contactFormView.bind("submitContactForm", __bind(function(formInfo) {
+          return $.ajax({
+            type: "GET",
+            url: "http://troybrinkerhoff.com/new2/contact.php",
+            data: formInfo,
+            dataType: "jsonp",
+            success: __bind(function(data) {
+              if (data === 1) {
+                alert("Thank you");
+                return this.contactFormView.blur();
+              } else {
+                return alert("Error while sending contact form");
+              }
+            }, this)
+          });
+        }, this));
       };
       HomeView.prototype.triggerMainLogoClick = function() {
         return this.trigger("homeclick");
@@ -437,15 +481,11 @@
         return this.trigger("link", linkName);
       };
       HomeView.prototype.displayFirstImage = function() {
-        this.thumbsView.currentPanelEl().find("img:first").click();
-        return console.log(this.thumbsView.currentPanelEl());
+        return this.thumbsView.currentPanelEl().find("img:first").click();
       };
-      HomeView.prototype.addImage = function(urls) {
-        return;
-      };
+      HomeView.prototype.addImage = function(urls) {};
       HomeView.prototype.slideThumbnails = function(outOrIn) {
         var right, translate;
-        console.log("sliding thumbnails " + outOrIn);
         if (outOrIn === "out") {
           translate = "-" + this.thumbsWidth + "px";
           right = 0;
@@ -568,7 +608,7 @@
       };
       HomePresenter.prototype.handleGalleriesChange = function(event) {
         var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _i, _len, _len2, _ref, _ref2, _ref3;
-        _ref = this.model.get("galleries").gallery_test.images;
+        _ref = k.s(this.model.get("galleries").gallery_test.images, 0, 3);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           image = _ref[_i];
           this.slideShow.addPicture(image);
@@ -581,7 +621,6 @@
         for (gallery in _ref2) {
           info = _ref2[gallery];
           linkName = k.capitalize(k(gallery).s("gallery_".length));
-          console.log(linkName);
           this.view.addNavLink(linkName, "#");
           imagePanel = new ImagePanelView;
           imagePanel.linkName = linkName;

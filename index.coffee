@@ -43,7 +43,6 @@
   if !window.console.log
     window.console.log = () ->
   $(document).ready () ->
-    console.log "ready"
 
     #trying the Model View Presenter pattern
 
@@ -100,7 +99,6 @@
         @el.show()
         @hidden = false
       tick: () =>
-        console.log "tick"
         img1 = @el.find("[data-index=#{@index}]")
         if @index == 0 or img1.attr("data-loaded") is "true"
           @nextPicture()
@@ -144,7 +142,6 @@
       updateLoader: () =>
         @loading.html @loadingStater()
       showImage: (url) =>
-        console.log "showing image of #{url}"
         @loading.show()
 
         @el.find('img:visible').fadeOut()
@@ -169,6 +166,23 @@
 
 
 
+    class ContactFormView extends Backbone.View
+      constructor: () ->
+        super
+        
+        @el = $ "#contact-form"
+        @textarea = @el.find('textarea')
+        @textarea.bind 'focus', (event) =>
+          @textarea.animate({width: "300px", height: "100px"}, 200)
+        @el.bind "blur", (event) =>
+          @textarea.animate({width: "100px", height: "20px"}, 200)
+        @el.bind "submit", (event) =>
+          event.preventDefault()
+          @trigger "submitContactForm", email: @el.find("#email").val(), message: @el.find('#message').val()
+          return false
+      blur: () =>
+        @el.blur()
+            
 
 
 
@@ -182,7 +196,6 @@
       url: 'http://troybrinkerhoff.com/new2/galleries.php'
 
       loadGalleriesSuccess: (data) =>
-        console.log data
         @set "galleries": data 
         
       loadGalleries: () =>
@@ -204,6 +217,7 @@
           return
         img1 = $ document.createElement "img"
         img1.attr "src", url
+        img1.addClass "thumbnail-image"
         img1.css css
         meta.img = img1
         @el.append img1
@@ -220,7 +234,6 @@
             "opacity": 1
 
         img1.bind "mouseout": (event) =>
-          console.log 
           if img1.attr("data-active") isnt 'true'
             img1.css "opacity": 0.5
 
@@ -253,7 +266,6 @@
         return ret
 
       goto: (index) ->
-        console.log index
         @currentPanel = index
         if z.browser.webkit
           translateX =  (-1 * (index * @width)) 
@@ -300,6 +312,22 @@
         @thumbsView = new HorizontalSliderView @thumbsWidth, 640
         $('#thumbs').append @thumbsView.el
         @imageDisplayer = new ImageDisplayerView $('#viewer')
+        @contactFormView = new ContactFormView
+        #move the callback function out of the view
+        @contactFormView.bind "submitContactForm", (formInfo) =>
+          $.ajax
+            type: "GET"
+            url: "http://troybrinkerhoff.com/new2/contact.php"
+            data: formInfo
+            dataType: "jsonp"
+            success: (data) =>
+              if data is 1
+                alert "Thank you"
+                @contactFormView.blur()
+              else
+                alert "Error while sending contact form"
+
+
       triggerMainLogoClick: () =>
         @trigger "homeclick"
       setImage: (url) ->
@@ -318,12 +346,10 @@
         @trigger "link", linkName
       displayFirstImage: () =>
         @thumbsView.currentPanelEl().find("img:first").click()
-        console.log  @thumbsView.currentPanelEl()
         
       addImage: (urls) ->
         return
       slideThumbnails: (outOrIn) ->
-        console.log "sliding thumbnails #{outOrIn}"
         if outOrIn == "out"
           translate = "-#{@thumbsWidth}px"
           right = 0
@@ -418,7 +444,7 @@
       handleImagePanelImageClicked: (meta) =>
         @view.setImage meta.image
       handleGalleriesChange: (event ) =>
-        for image in @model.get("galleries").gallery_test.images
+        for image in k.s @model.get("galleries").gallery_test.images, 0,3
           @slideShow.addPicture image
         @slideShow.init()
         @view.clearNavLinks()
@@ -426,7 +452,6 @@
         galleryIndex = 0
         for gallery, info of @model.get "galleries"
           linkName = k.capitalize(k(gallery).s("gallery_".length))
-          console.log linkName
           @view.addNavLink linkName, "#"
           imagePanel = new ImagePanelView
           imagePanel.linkName = linkName
