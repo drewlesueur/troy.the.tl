@@ -59,6 +59,10 @@
         @indexCount = 0
         @index = 0
         @hidden = false
+        @el.append @make "div", {"className": "arrow
+          left-slide-show-arrow"}, "<"
+        @el.append @make "div", {"className":
+          "arrow right-slide-show-arrow"}, ">"
       addPicture: (url) ->
         image = $ document.createElement "img"
         image.load () ->
@@ -196,9 +200,23 @@
       url: 'http://troybrinkerhoff.com/new2/galleries.php'
 
       loadGalleriesSuccess: (data) =>
+        console.log data
+        newData = {}
+        i = 0
+        for key, value of data
+          i++
+          value.images = _.s(value.images, 0, 2)
+          value.thumbs = _.s value.thumbs, 0, 2
+          newData[key] = value
+          if i is 3
+            break
+        #console.log $('#message').val JSON.stringify newData
         @set "galleries": data 
         
       loadGalleries: () =>
+        if environment is "test"
+          @loadGalleriesSuccess {"gallery_test":{"images":["http://troybrinkerhoff.com/gallery_test/images/01.jpg","http://troybrinkerhoff.com/gallery_test/images/02.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg"]},"gallery_families":{"images":["http://troybrinkerhoff.com/gallery_families/images/01.jpg","http://troybrinkerhoff.com/gallery_families/images/02.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg"]},"gallery_children":{"images":["http://troybrinkerhoff.com/gallery_children/images/01.jpg","http://troybrinkerhoff.com/gallery_children/images/02.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg"]}}
+          return
         $.ajax
           type: "GET"
           url: "http://troybrinkerhoff.com/new2/galleries.php"
@@ -411,6 +429,7 @@
         _.bindAll this
 
         @slideShow = new SlideShowView
+        @slideShow.el.attr "id", "slide-show"
         $('#home-wrapper').append @slideShow.el
         @model = new HomeModel
         @view = new HomeView

@@ -7,8 +7,6 @@ browser = new zombie.Browser({debug: false})
 browser.runScripts = true
 
 
-test = (b) ->
-  console.log b.text("title") + "YEA"
 
 
 myVows = vows.describe('Basic Page stuff').addBatch
@@ -16,9 +14,18 @@ myVows = vows.describe('Basic Page stuff').addBatch
     topic: () ->
       browser.visit 'http://troy.the.tl', (err) => 
         console.log browser.text("title") 
-        @callback null, err, browser
-    'We should see the title': (space, err, browser, status ) ->
+
+        setTimeout (() => @callback null, err, browser), 1000
+    'I see the title': (space, err, browser, status ) ->
       assert.equal browser.text("title"), "Troy Brinkerhoff"
+    'There should be a slide show': (s, err, browser) ->
+      assert.ok browser.querySelector('#slide-show')   
+    'I should see left and right arrows for the main slideshow' : (s, err, browser) ->
+      assert.ok browser.querySelector ".left-slide-show-arrow"
+      assert.ok browser.querySelector ".right-slide-show-arrow"
+    'I should be able to see the online viewing link' : (s, err, browser) ->
+      
+      #assert.ok browser.querySelector 'a[href="http://troybrinkerhoff.com/onlineviewing/"]'
 
 
 myVows.run()

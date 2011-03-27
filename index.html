@@ -28,6 +28,18 @@
     document.write('<script src="http://inc.the.tl/zepto/src/fx.js"><\/script>')
     document.write('<script src="http://inc.the.tl/zepto/src/detect.js"><\/script>')
   }
+  var environment = "production"
+  if (document.location.toString().indexOf("test") != -1) {
+  environment = "test"
+	document.write('<link rel="stylesheet" href="test/qunit/qunit.css" type="text/css" media="screen">')
+  document.write(
+   '<script type="text/javascript" src="test/qunit/qunit.js"><\/script>'
+  )
+  document.write(
+   '<script type="text/javascript" src="test/qunit/test.js"><\/script>'
+  )
+
+  }
 </script>
 <script>
   if (!webkit) {
@@ -71,5 +83,18 @@
 
     </form>
   </div>
+
+<script>
+  if (environment == "test") {
+    document.write(
+	'<h1 id="qunit-header">QUnit Test Suite</h1>' +
+	'<h2 id="qunit-banner"></h2>' +
+	'<div id="qunit-testrunner-toolbar"></div>' +
+	'<h2 id="qunit-userAgent"></h2>' +
+	'<ol id="qunit-tests"></ol>' +
+	'<div id="qunit-fixture">test markup</div>'
+  )
+}
+</script>
 </body>
 </html>

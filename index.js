@@ -83,6 +83,12 @@
         this.indexCount = 0;
         this.index = 0;
         this.hidden = false;
+        this.el.append(this.make("div", {
+          "className": "arrow          left-slide-show-arrow"
+        }, "<"));
+        this.el.append(this.make("div", {
+          "className": "arrow right-slide-show-arrow"
+        }, ">"));
       }
       SlideShowView.prototype.addPicture = function(url) {
         var image;
@@ -273,11 +279,42 @@
       }
       HomeModel.prototype.url = 'http://troybrinkerhoff.com/new2/galleries.php';
       HomeModel.prototype.loadGalleriesSuccess = function(data) {
+        var i, key, newData, value;
+        console.log(data);
+        newData = {};
+        i = 0;
+        for (key in data) {
+          value = data[key];
+          i++;
+          value.images = _.s(value.images, 0, 2);
+          value.thumbs = _.s(value.thumbs, 0, 2);
+          newData[key] = value;
+          if (i === 3) {
+            break;
+          }
+        }
         return this.set({
           "galleries": data
         });
       };
       HomeModel.prototype.loadGalleries = function() {
+        if (environment === "test") {
+          this.loadGalleriesSuccess({
+            "gallery_test": {
+              "images": ["http://troybrinkerhoff.com/gallery_test/images/01.jpg", "http://troybrinkerhoff.com/gallery_test/images/02.jpg"],
+              "thumbs": ["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg"]
+            },
+            "gallery_families": {
+              "images": ["http://troybrinkerhoff.com/gallery_families/images/01.jpg", "http://troybrinkerhoff.com/gallery_families/images/02.jpg"],
+              "thumbs": ["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg"]
+            },
+            "gallery_children": {
+              "images": ["http://troybrinkerhoff.com/gallery_children/images/01.jpg", "http://troybrinkerhoff.com/gallery_children/images/02.jpg"],
+              "thumbs": ["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg"]
+            }
+          });
+          return;
+        }
         return $.ajax({
           type: "GET",
           url: "http://troybrinkerhoff.com/new2/galleries.php",
@@ -567,6 +604,7 @@
         this.handleImagePanelImageClicked = __bind(this.handleImagePanelImageClicked, this);;
         this.handleLinkClick = __bind(this.handleLinkClick, this);;        _.bindAll(this);
         this.slideShow = new SlideShowView;
+        this.slideShow.el.attr("id", "slide-show");
         $('#home-wrapper').append(this.slideShow.el);
         this.model = new HomeModel;
         this.view = new HomeView;
