@@ -54,7 +54,7 @@
         @height = 460
         @timer = ""
         @interval = 6000
-        @fadeSpeed = 4000
+        @fadeSpeed = 1000
         @el.css position: "relative"
         @indexCount = 0
         @index = 0
@@ -63,6 +63,14 @@
           left-slide-show-arrow"}, "<"
         @el.append @make "div", {"className":
           "arrow right-slide-show-arrow"}, ">"
+        @el.find('.right-slide-show-arrow').click =>
+          @pause()
+          @nextPicture()
+
+        @el.find('.left-slide-show-arrow').click =>
+          @pause()
+          @prevPicture()
+          
       addPicture: (url) ->
         image = $ document.createElement "img"
         image.load () ->
@@ -79,18 +87,18 @@
           display: "none"
         @indexCount++
       
-      nextPicture: () ->
+      nextPicture: () =>
         @el.find("img:visible").fadeOut(@fadeSpeed)
         @el.find("[data-index=#{@index}]").fadeIn(@fadeSpeed)
         @incIndex()
-      prevPicture: () ->
+      prevPicture: () =>
         @el.find("img:visible").fadeOut(@fadeSpeed)
         @el.find("[data-index=#{@index}]").fadeIn(@fadeSpeed)
         @decIndex()
       decIndex: () =>
         @index--
-        if @index <= 0
-          @index = @indexCount
+        if @index < 0
+          @index = @indexCount - 1
       incIndex: () =>
         @index++
         if @index >= @indexCount
@@ -200,22 +208,23 @@
       url: 'http://troybrinkerhoff.com/new2/galleries.php'
 
       loadGalleriesSuccess: (data) =>
-        console.log data
-        newData = {}
-        i = 0
-        for key, value of data
-          i++
-          value.images = _.s(value.images, 0, 2)
-          value.thumbs = _.s value.thumbs, 0, 2
-          newData[key] = value
-          if i is 3
-            break
-        #console.log $('#message').val JSON.stringify newData
+        if false and environment isnt "test"
+          console.log data
+          newData = {}
+          i = 0
+          for key, value of data
+            i++
+            value.images = _.s(value.images, 0, 3) 
+            value.thumbs = _.s value.thumbs, 0, 3
+            newData[key] = value
+            if i is 3
+              break
+          console.log JSON.stringify newData
         @set "galleries": data 
         
       loadGalleries: () =>
         if environment is "test"
-          @loadGalleriesSuccess {"gallery_test":{"images":["http://troybrinkerhoff.com/gallery_test/images/01.jpg","http://troybrinkerhoff.com/gallery_test/images/02.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg"]},"gallery_families":{"images":["http://troybrinkerhoff.com/gallery_families/images/01.jpg","http://troybrinkerhoff.com/gallery_families/images/02.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg"]},"gallery_children":{"images":["http://troybrinkerhoff.com/gallery_children/images/01.jpg","http://troybrinkerhoff.com/gallery_children/images/02.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg"]}}
+          @loadGalleriesSuccess {"gallery_test":{"images":["http://troybrinkerhoff.com/gallery_test/images/01.jpg","http://troybrinkerhoff.com/gallery_test/images/02.jpg","http://troybrinkerhoff.com/gallery_test/images/03.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg","http://troybrinkerhoff.com/gallery_test/thumbs/03.jpg"]},"gallery_families":{"images":["http://troybrinkerhoff.com/gallery_families/images/01.jpg","http://troybrinkerhoff.com/gallery_families/images/02.jpg","http://troybrinkerhoff.com/gallery_families/images/03.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg","http://troybrinkerhoff.com/gallery_families/thumbs/03.jpg"]},"gallery_children":{"images":["http://troybrinkerhoff.com/gallery_children/images/01.jpg","http://troybrinkerhoff.com/gallery_children/images/02.jpg","http://troybrinkerhoff.com/gallery_children/images/03.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg","http://troybrinkerhoff.com/gallery_children/thumbs/03.jpg"]}}
           return
         $.ajax
           type: "GET"
@@ -487,6 +496,7 @@
 
 
     app = new HomePresenter
+    window.app = app
 
       
 

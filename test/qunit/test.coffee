@@ -14,4 +14,28 @@ $(document).ready () ->
     equal $('.right-slide-show-arrow').length, 1,  "The right arrow"
     equal 1,1
 
+  asyncTest "Clicking the left slideshow arrow should change the images", ->
+    app.slideShow.index = 0
+    leftArrow = app.slideShow.el.find(".left-slide-show-arrow")
+    leftArrow.click()
+    equal app.slideShow.index, 2
+    leftArrow.click()
+    equal app.slideShow.index, 1
+    leftArrow.click()
+    equal app.slideShow.index, 0
+    start()
+
+  asyncTest "Clicking right slideshow arrow should change the images", ->
+    app.slideShow.index = 0
+    rightArrow = app.slideShow.el.find(".right-slide-show-arrow")
+    rightArrow.click()
+    equal app.slideShow.index, 1
+    rightArrow.click()
+    equal app.slideShow.index, 2
+    rightArrow.click()
+    equal app.slideShow.index, 0
+    start()
+
+    
+
 

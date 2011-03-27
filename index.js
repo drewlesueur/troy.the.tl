@@ -70,13 +70,15 @@
         this.show = __bind(this.show, this);;
         this.hide = __bind(this.hide, this);;
         this.incIndex = __bind(this.incIndex, this);;
-        this.decIndex = __bind(this.decIndex, this);;        this.el = div("");
+        this.decIndex = __bind(this.decIndex, this);;
+        this.prevPicture = __bind(this.prevPicture, this);;
+        this.nextPicture = __bind(this.nextPicture, this);;        this.el = div("");
         this.el.addClass("slide-show-yea");
         this.width = 960;
         this.height = 460;
         this.timer = "";
         this.interval = 6000;
-        this.fadeSpeed = 4000;
+        this.fadeSpeed = 1000;
         this.el.css({
           position: "relative"
         });
@@ -89,6 +91,14 @@
         this.el.append(this.make("div", {
           "className": "arrow right-slide-show-arrow"
         }, ">"));
+        this.el.find('.right-slide-show-arrow').click(__bind(function() {
+          this.pause();
+          return this.nextPicture();
+        }, this));
+        this.el.find('.left-slide-show-arrow').click(__bind(function() {
+          this.pause();
+          return this.prevPicture();
+        }, this));
       }
       SlideShowView.prototype.addPicture = function(url) {
         var image;
@@ -122,8 +132,8 @@
       };
       SlideShowView.prototype.decIndex = function() {
         this.index--;
-        if (this.index <= 0) {
-          return this.index = this.indexCount;
+        if (this.index < 0) {
+          return this.index = this.indexCount - 1;
         }
       };
       SlideShowView.prototype.incIndex = function() {
@@ -280,18 +290,21 @@
       HomeModel.prototype.url = 'http://troybrinkerhoff.com/new2/galleries.php';
       HomeModel.prototype.loadGalleriesSuccess = function(data) {
         var i, key, newData, value;
-        console.log(data);
-        newData = {};
-        i = 0;
-        for (key in data) {
-          value = data[key];
-          i++;
-          value.images = _.s(value.images, 0, 2);
-          value.thumbs = _.s(value.thumbs, 0, 2);
-          newData[key] = value;
-          if (i === 3) {
-            break;
+        if (false && environment !== "test") {
+          console.log(data);
+          newData = {};
+          i = 0;
+          for (key in data) {
+            value = data[key];
+            i++;
+            value.images = _.s(value.images, 0, 3);
+            value.thumbs = _.s(value.thumbs, 0, 3);
+            newData[key] = value;
+            if (i === 3) {
+              break;
+            }
           }
+          console.log(JSON.stringify(newData));
         }
         return this.set({
           "galleries": data
@@ -301,16 +314,16 @@
         if (environment === "test") {
           this.loadGalleriesSuccess({
             "gallery_test": {
-              "images": ["http://troybrinkerhoff.com/gallery_test/images/01.jpg", "http://troybrinkerhoff.com/gallery_test/images/02.jpg"],
-              "thumbs": ["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg"]
+              "images": ["http://troybrinkerhoff.com/gallery_test/images/01.jpg", "http://troybrinkerhoff.com/gallery_test/images/02.jpg", "http://troybrinkerhoff.com/gallery_test/images/03.jpg"],
+              "thumbs": ["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg", "http://troybrinkerhoff.com/gallery_test/thumbs/03.jpg"]
             },
             "gallery_families": {
-              "images": ["http://troybrinkerhoff.com/gallery_families/images/01.jpg", "http://troybrinkerhoff.com/gallery_families/images/02.jpg"],
-              "thumbs": ["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg"]
+              "images": ["http://troybrinkerhoff.com/gallery_families/images/01.jpg", "http://troybrinkerhoff.com/gallery_families/images/02.jpg", "http://troybrinkerhoff.com/gallery_families/images/03.jpg"],
+              "thumbs": ["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg", "http://troybrinkerhoff.com/gallery_families/thumbs/03.jpg"]
             },
             "gallery_children": {
-              "images": ["http://troybrinkerhoff.com/gallery_children/images/01.jpg", "http://troybrinkerhoff.com/gallery_children/images/02.jpg"],
-              "thumbs": ["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg"]
+              "images": ["http://troybrinkerhoff.com/gallery_children/images/01.jpg", "http://troybrinkerhoff.com/gallery_children/images/02.jpg", "http://troybrinkerhoff.com/gallery_children/images/03.jpg"],
+              "thumbs": ["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg", "http://troybrinkerhoff.com/gallery_children/thumbs/03.jpg"]
             }
           });
           return;
@@ -684,6 +697,7 @@
       };
       return HomePresenter;
     })();
-    return app = new HomePresenter;
+    app = new HomePresenter;
+    return window.app = app;
   });
 }).call(this);
