@@ -10,7 +10,7 @@
   };
   _.mixin({
     wait: function(time, func) {
-      return sietTimeout(func, time);
+      return setTimeout(func, time);
     },
     s: function(val, start, end) {
       var need_to_join, ret;

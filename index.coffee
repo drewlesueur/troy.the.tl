@@ -1,6 +1,6 @@
   _.mixin 
     wait: (time, func)->
-     sietTimeout func, time
+     setTimeout func, time
     s: (val, start, end) ->
       need_to_join = false
       ret = []
