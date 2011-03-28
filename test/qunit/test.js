@@ -62,6 +62,28 @@
         });
       });
     });
+    asyncTest("panel should scroll when hovering over the top", function() {
+      document.location.href = "#galleries/portrait";
+      return _.wait(200, function() {
+        var thumbsView, topp;
+        thumbsView = app.view.thumbsView;
+        equal(thumbsView.slidingState, false);
+        thumbsView.handleMouseExtremeTop();
+        equal(thumbsView.slidingState, "down");
+        console.log(thumbsView.currentPanelEl);
+        topp = thumbsView.currentPanelEl.position().top;
+        return _.wait(100, function() {
+          equal(thumbsView.currentPanelEl.position().top > topp, 1);
+          thumbsView.handleMouseNotExtremeTop();
+          topp = thumbsView.currentPanelEl.position().top;
+          equal(thumbsView.slidingState, false);
+          return _.wait(100, function() {
+            equal(thumbsView.currentPanelEl.position().top, topp);
+            return start();
+          });
+        });
+      });
+    });
     asyncTest("Clicking the left slideshow arrow should change the images", function() {
       var leftArrow;
       app.slideShow.index = 0;
@@ -88,11 +110,6 @@
     });
     test("The background should be a gray", function() {
       return equal($('body').css("background-color"), "rgb(196, 196, 196)");
-    });
-    _.mixin({
-      wait: function(time, func) {
-        return setTimeout(func, time);
-      }
     });
     return test("I should see the banner as an image", function() {
       return equal($('#banner-img[src="http://troybrinkerhoff.com/files/banner.png"]').length, 1);

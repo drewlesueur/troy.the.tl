@@ -9,6 +9,9 @@
     return child;
   };
   _.mixin({
+    wait: function(time, func) {
+      return sietTimeout(func, time);
+    },
     s: function(val, start, end) {
       var need_to_join, ret;
       need_to_join = false;
@@ -81,9 +84,9 @@
           fromBottom = (height - y) / height * 100;
           false && console.log("          top " + fromTop + "          bottom " + fromBottom + "          left " + fromLeft + "          right " + fromRight + "          ");
           if (fromTop <= percent) {
-            el.trigger("mouseextremetop", ["top"]);
+            el.trigger("mouseextremetop");
           } else {
-            el.trigger("mousenotextremetop", ["top"]);
+            el.trigger("mousenotextremetop");
           }
           if (fromBottom <= percent) {
             el.trigger("mouseextremebottom");
@@ -498,9 +501,12 @@
       function HorizontalSliderView(width, height) {
         this.width = width != null ? width : 300;
         this.height = height != null ? height : 300;
+        this.slideDownSmall = __bind(this.slideDownSmall, this);;
         this.slideUpSmall = __bind(this.slideUpSmall, this);;
         this.handleMouseExtremeBottom = __bind(this.handleMouseExtremeBottom, this);;
         this.handleMouseNotExtremeBottom = __bind(this.handleMouseNotExtremeBottom, this);;
+        this.handleMouseExtremeTop = __bind(this.handleMouseExtremeTop, this);;
+        this.handleMouseNotExtremeTop = __bind(this.handleMouseNotExtremeTop, this);;
         HorizontalSliderView.__super__.constructor.apply(this, arguments);
         _.bindAll(this);
         this.el = div("");
@@ -524,9 +530,29 @@
         this.el.mouseextremes();
         this.el.bind("mouseextremebottom", this.handleMouseExtremeBottom);
         this.el.bind("mousenotextremebottom", this.handleMouseNotExtremeBottom);
+        this.el.bind("mouseextremetop", this.handleMouseExtremeTop);
+        this.el.bind("mousenotextremetop", this.handleMouseNotExtremeTop);
         return this;
       }
+      HorizontalSliderView.prototype.handleMouseNotExtremeTop = function() {
+        if (this.slidingState === "up") {
+          return;
+        }
+        this.slidingState = false;
+        return clearInterval(this.slidingInterval);
+      };
+      HorizontalSliderView.prototype.handleMouseExtremeTop = function() {
+        if (this.slidingState !== false) {
+          return;
+        }
+        this.slidingState = "down";
+        clearInterval(this.slidingInterval);
+        return this.slidingInterval = setInterval(this.slideDownSmall, 10);
+      };
       HorizontalSliderView.prototype.handleMouseNotExtremeBottom = function() {
+        if (this.slidingState === "down") {
+          return;
+        }
         this.slidingState = false;
         return clearInterval(this.slidingInterval);
       };
@@ -540,6 +566,12 @@
       };
       HorizontalSliderView.prototype.slideUpSmall = function() {
         return this.currentPanelEl.css("top", this.currentPanelEl.position().top - 1 + "px");
+      };
+      HorizontalSliderView.prototype.slideDownSmall = function() {
+        if (this.currentPanelEl.position().top >= 0) {
+          return;
+        }
+        return this.currentPanelEl.css("top", this.currentPanelEl.position().top + 1 + "px");
       };
       HorizontalSliderView.prototype.goto = function(index) {
         var translateX;

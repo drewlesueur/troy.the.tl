@@ -1,4 +1,6 @@
   _.mixin 
+    wait: (time, func)->
+     sietTimeout func, time
     s: (val, start, end) ->
       need_to_join = false
       ret = []
@@ -70,9 +72,9 @@
           right #{fromRight}
           "
           if fromTop <= percent
-            el.trigger("mouseextremetop", ["top"])
+            el.trigger "mouseextremetop"
           else
-            el.trigger "mousenotextremetop", ["top"]
+            el.trigger "mousenotextremetop"
 
           if fromBottom <= percent
             el.trigger "mouseextremebottom"
@@ -394,14 +396,24 @@
         @el.mouseextremes()
         @el.bind "mouseextremebottom", @handleMouseExtremeBottom 
         @el.bind "mousenotextremebottom", @handleMouseNotExtremeBottom 
+        @el.bind "mouseextremetop",  @handleMouseExtremeTop
+        @el.bind "mousenotextremetop", @handleMouseNotExtremeTop
 
 
         return this
-      handleMouseNotExtremeBottom: =>
+      handleMouseNotExtremeTop: =>
+        if @slidingState is "up" then return
         @slidingState = false
         clearInterval @slidingInterval
-
-
+      handleMouseExtremeTop: () =>
+        if @slidingState isnt false then return
+        @slidingState = "down"
+        clearInterval @slidingInterval
+        @slidingInterval = setInterval @slideDownSmall, 10
+      handleMouseNotExtremeBottom: =>
+        if @slidingState is "down" then return
+        @slidingState = false
+        clearInterval @slidingInterval
       handleMouseExtremeBottom: () =>
         if @slidingState isnt false then return
         @slidingState = "up"
@@ -409,7 +421,11 @@
         @slidingInterval = setInterval @slideUpSmall, 10
 
       slideUpSmall: () =>
+        #if @currentPanelEl.position().top > @currentPanelEl.height() then return
         @currentPanelEl.css "top", @currentPanelEl.position().top - 1 + "px"
+      slideDownSmall: () =>
+        if @currentPanelEl.position().top >= 0 then return
+        @currentPanelEl.css "top", @currentPanelEl.position().top + 1 + "px"
 
       goto: (index) ->
         @currentPanel = index
