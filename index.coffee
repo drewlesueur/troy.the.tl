@@ -70,7 +70,54 @@
         @el.find('.left-slide-show-arrow').click =>
           @pause()
           @prevPicture()
-          
+        @rightArrowVisible = false
+        @rightArrowFading = false
+        @leftArrowVisible = false
+        @leftArrowFading = false
+
+        @el.mouseleave =>
+          @handleNonLeftSideMouseMove()
+          @handleNonRightSideMouseMove()
+
+        @el.mousemove (e) =>
+          x = e.pageX - @el.offset().left
+          y = e.pageY - @el.offset().top
+          if @el.width() - x < 100
+            @handleRightSideMouseMove()
+          else
+            @handleNonRightSideMouseMove()
+          if x < 100
+            @handleLeftSideMouseMove()
+          else
+            @handleNonLeftSideMouseMove()
+
+
+      handleNonLeftSideMouseMove: =>
+        if @leftArrowFading or not(@leftArrowVisible) then return
+        @leftArrowFading = true
+        @el.find('.left-slide-show-arrow').fadeOut =>
+          @leftArrowFading = false
+          @leftArrowVisible = false
+      handleLeftSideMouseMove: () =>
+        if @leftArrowFading or @leftArrowVisible then return
+        @leftArrowFading = true
+        @el.find('.left-slide-show-arrow').fadeIn =>
+          @leftArrowFading = false
+          @leftArrowVisible = true
+
+      handleNonRightSideMouseMove: =>
+        if @rightArrowFading or not(@rightArrowVisible) then return
+        @rightArrowFading = true
+        @el.find('.right-slide-show-arrow').fadeOut =>
+          @rightArrowFading = false
+          @rightArrowVisible = false
+      handleRightSideMouseMove: () =>
+        if @rightArrowFading or @rightArrowVisible then return
+        @rightArrowFading = true
+        @el.find('.right-slide-show-arrow').fadeIn =>
+          @rightArrowFading = false
+          @rightArrowVisible = true
+        
       addPicture: (url) ->
         image = $ document.createElement "img"
         image.load () ->
@@ -208,6 +255,12 @@
       url: 'http://troybrinkerhoff.com/new2/galleries.php'
 
       loadGalleriesSuccess: (data) =>
+        if environment is "test"
+          for key, value of data
+            value.images = _.s value.images, 0, 3
+            value.thumbs = _.s value.thumbs, 0, 3
+            data[key] = value
+    
         if false and environment isnt "test"
           console.log data
           newData = {}
@@ -223,9 +276,6 @@
         @set "galleries": data 
         
       loadGalleries: () =>
-        if environment is "test"
-          @loadGalleriesSuccess {"gallery_test":{"images":["http://troybrinkerhoff.com/gallery_test/images/01.jpg","http://troybrinkerhoff.com/gallery_test/images/02.jpg","http://troybrinkerhoff.com/gallery_test/images/03.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg","http://troybrinkerhoff.com/gallery_test/thumbs/03.jpg"]},"gallery_families":{"images":["http://troybrinkerhoff.com/gallery_families/images/01.jpg","http://troybrinkerhoff.com/gallery_families/images/02.jpg","http://troybrinkerhoff.com/gallery_families/images/03.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg","http://troybrinkerhoff.com/gallery_families/thumbs/03.jpg"]},"gallery_children":{"images":["http://troybrinkerhoff.com/gallery_children/images/01.jpg","http://troybrinkerhoff.com/gallery_children/images/02.jpg","http://troybrinkerhoff.com/gallery_children/images/03.jpg"],"thumbs":["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg","http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg","http://troybrinkerhoff.com/gallery_children/thumbs/03.jpg"]}}
-          return
         $.ajax
           type: "GET"
           url: "http://troybrinkerhoff.com/new2/galleries.php"
@@ -481,8 +531,8 @@
         Backbone.history.start()
 
 
-    app = new HomePresenter
-    window.app = app
+    window.app = new HomePresenter
+    app = window.app
     routes = new HomeRoutes
 
       

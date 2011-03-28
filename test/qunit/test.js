@@ -12,6 +12,20 @@
       equal($('.right-slide-show-arrow').length, 1, "The right arrow");
       return equal(1, 1);
     });
+    test("a right arrow should appear if I hover over the right side of the slideshow", function() {
+      equal($('.right-slide-show-arrow').css("display"), "none");
+      app.slideShow.handleRightSideMouseMove();
+      equal($('.right-slide-show-arrow').css("display"), "block");
+      app.slideshow.handleNonRightSideMouseMove();
+      return equal($('.right-slide-show-arrow').css("display"), "none");
+    });
+    test("a left arrow should appear if I hover over the left side of the slideshow", function() {
+      equal($('.left-slide-show-arrow').css("display"), "none");
+      app.slideShow.handleLeftSideMouseMove();
+      equal($('.left-slide-show-arrow').css("display"), "block");
+      app.slideshow.handleNonLeftSideMouseMove();
+      return equal($('.left-slide-show-arrow').css("display"), "none");
+    });
     asyncTest("Clicking the left slideshow arrow should change the images", function() {
       var leftArrow;
       app.slideShow.index = 0;
@@ -44,25 +58,8 @@
         return setTimeout(func, time);
       }
     });
-    asyncTest("The banner should go to the bottom when clicking on a gallery link", function() {
-      var clickLink;
-      $('#main-logo').click();
-      clickLink = function() {
-        $('.nav').first().click();
-        return _.wait(1000, function() {
-          console.log($('#banner').css('bottom'));
-          if ($('#banner').css("bottom") === "0") {
-            equal($('#banner').css("bottom"), 0);
-          } else {
-            equal($('#banner').css("-webkit-transform"), "matrix(1, 0, 0, 1, 0, 50)");
-          }
-          return start();
-        });
-      };
-      return clickLink();
-    });
     return test("I should see the banner as an image", function() {
-      return equal($('#banner-img[src="banner.png"]').length, 1);
+      return equal($('#banner-img[src="http://troybrinkerhoff.com/files/banner.png"]').length, 1);
     });
   });
 }).call(this);

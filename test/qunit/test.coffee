@@ -14,6 +14,21 @@ $(document).ready () ->
     equal $('.right-slide-show-arrow').length, 1,  "The right arrow"
     equal 1,1
 
+  test "a right arrow should appear if I hover over the right side of the slideshow", ->
+    equal $('.right-slide-show-arrow').css("display"), "none"
+    app.slideShow.handleRightSideMouseMove()
+    equal $('.right-slide-show-arrow').css("display"), "block"
+    app.slideshow.handleNonRightSideMouseMove()
+    equal $('.right-slide-show-arrow').css("display"), "none"
+
+
+  test "a left arrow should appear if I hover over the left side of the slideshow", ->
+    equal $('.left-slide-show-arrow').css("display"), "none"
+    app.slideShow.handleLeftSideMouseMove()
+    equal $('.left-slide-show-arrow').css("display"), "block"
+    app.slideshow.handleNonLeftSideMouseMove()
+    equal $('.left-slide-show-arrow').css("display"), "none"
+
   asyncTest "Clicking the left slideshow arrow should change the images", ->
     app.slideShow.index = 0
     leftArrow = app.slideShow.el.find(".left-slide-show-arrow")
@@ -43,20 +58,7 @@ $(document).ready () ->
     wait: (time, func)->
       setTimeout func, time
 
-  asyncTest "The banner should go to the bottom when clicking on a gallery link", ->
-    $('#main-logo').click()
-    clickLink = ->
-      $('.nav').first().click()
-      _.wait 1000, ->
-        console.log $('#banner').css('bottom')
-        if $('#banner').css("bottom") == "0"
-          equal $('#banner').css("bottom"), 0
-        else
-          equal $('#banner').css("-webkit-transform"), "matrix(1, 0, 0, 1, 0, 50)"
-        
-        start()
-    clickLink()
-
   test "I should see the banner as an image", ->
-    equal $('#banner-img[src="banner.png"]').length, 1
+    equal $('#banner-img[src="http://troybrinkerhoff.com/files/banner.png"]').length, 1
       
+

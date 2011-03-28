@@ -72,7 +72,11 @@
         this.incIndex = __bind(this.incIndex, this);;
         this.decIndex = __bind(this.decIndex, this);;
         this.prevPicture = __bind(this.prevPicture, this);;
-        this.nextPicture = __bind(this.nextPicture, this);;        this.el = div("");
+        this.nextPicture = __bind(this.nextPicture, this);;
+        this.handleRightSideMouseMove = __bind(this.handleRightSideMouseMove, this);;
+        this.handleNonRightSideMouseMove = __bind(this.handleNonRightSideMouseMove, this);;
+        this.handleLeftSideMouseMove = __bind(this.handleLeftSideMouseMove, this);;
+        this.handleNonLeftSideMouseMove = __bind(this.handleNonLeftSideMouseMove, this);;        this.el = div("");
         this.el.addClass("slide-show-yea");
         this.width = 960;
         this.height = 460;
@@ -99,7 +103,70 @@
           this.pause();
           return this.prevPicture();
         }, this));
+        this.rightArrowVisible = false;
+        this.rightArrowFading = false;
+        this.leftArrowVisible = false;
+        this.leftArrowFading = false;
+        this.el.mouseleave(__bind(function() {
+          this.handleNonLeftSideMouseMove();
+          return this.handleNonRightSideMouseMove();
+        }, this));
+        this.el.mousemove(__bind(function(e) {
+          var x, y;
+          x = e.pageX - this.el.offset().left;
+          y = e.pageY - this.el.offset().top;
+          if (this.el.width() - x < 100) {
+            this.handleRightSideMouseMove();
+          } else {
+            this.handleNonRightSideMouseMove();
+          }
+          if (x < 100) {
+            return this.handleLeftSideMouseMove();
+          } else {
+            return this.handleNonLeftSideMouseMove();
+          }
+        }, this));
       }
+      SlideShowView.prototype.handleNonLeftSideMouseMove = function() {
+        if (this.leftArrowFading || !this.leftArrowVisible) {
+          return;
+        }
+        this.leftArrowFading = true;
+        return this.el.find('.left-slide-show-arrow').fadeOut(__bind(function() {
+          this.leftArrowFading = false;
+          return this.leftArrowVisible = false;
+        }, this));
+      };
+      SlideShowView.prototype.handleLeftSideMouseMove = function() {
+        if (this.leftArrowFading || this.leftArrowVisible) {
+          return;
+        }
+        this.leftArrowFading = true;
+        return this.el.find('.left-slide-show-arrow').fadeIn(__bind(function() {
+          this.leftArrowFading = false;
+          return this.leftArrowVisible = true;
+        }, this));
+      };
+      SlideShowView.prototype.handleNonRightSideMouseMove = function() {
+        if (this.rightArrowFading || !this.rightArrowVisible) {
+          return;
+        }
+        this.rightArrowFading = true;
+        return this.el.find('.right-slide-show-arrow').fadeOut(__bind(function() {
+          this.rightArrowFading = false;
+          return this.rightArrowVisible = false;
+        }, this));
+      };
+      SlideShowView.prototype.handleRightSideMouseMove = function() {
+        if (this.rightArrowFading || this.rightArrowVisible) {
+          return;
+        }
+        this.rightArrowFading = true;
+        return this.el.find('.right-slide-show-arrow').fadeIn(__bind(function() {
+          this.rightArrowFading = false;
+          return this.rightArrowVisible = true;
+        }, this));
+      };
       SlideShowView.prototype.addPicture = function(url) {
         var image;
         image = $(document.createElement("img"));
@@ -290,6 +357,14 @@
       HomeModel.prototype.url = 'http://troybrinkerhoff.com/new2/galleries.php';
       HomeModel.prototype.loadGalleriesSuccess = function(data) {
         var i, key, newData, value;
+        if (environment === "test") {
+          for (key in data) {
+            value = data[key];
+            value.images = _.s(value.images, 0, 3);
+            value.thumbs = _.s(value.thumbs, 0, 3);
+            data[key] = value;
+          }
+        }
         if (false && environment !== "test") {
           console.log(data);
           newData = {};
@@ -311,23 +386,6 @@
         });
       };
       HomeModel.prototype.loadGalleries = function() {
-        if (environment === "test") {
-          this.loadGalleriesSuccess({
-            "gallery_test": {
-              "images": ["http://troybrinkerhoff.com/gallery_test/images/01.jpg", "http://troybrinkerhoff.com/gallery_test/images/02.jpg", "http://troybrinkerhoff.com/gallery_test/images/03.jpg"],
-              "thumbs": ["http://troybrinkerhoff.com/gallery_test/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_test/thumbs/02.jpg", "http://troybrinkerhoff.com/gallery_test/thumbs/03.jpg"]
-            },
-            "gallery_families": {
-              "images": ["http://troybrinkerhoff.com/gallery_families/images/01.jpg", "http://troybrinkerhoff.com/gallery_families/images/02.jpg", "http://troybrinkerhoff.com/gallery_families/images/03.jpg"],
-              "thumbs": ["http://troybrinkerhoff.com/gallery_families/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_families/thumbs/02.jpg", "http://troybrinkerhoff.com/gallery_families/thumbs/03.jpg"]
-            },
-            "gallery_children": {
-              "images": ["http://troybrinkerhoff.com/gallery_children/images/01.jpg", "http://troybrinkerhoff.com/gallery_children/images/02.jpg", "http://troybrinkerhoff.com/gallery_children/images/03.jpg"],
-              "thumbs": ["http://troybrinkerhoff.com/gallery_children/thumbs/01.jpg", "http://troybrinkerhoff.com/gallery_children/thumbs/02.jpg", "http://troybrinkerhoff.com/gallery_children/thumbs/03.jpg"]
-            }
-          });
-          return;
-        }
         return $.ajax({
           type: "GET",
           url: "http://troybrinkerhoff.com/new2/galleries.php",
@@ -683,8 +741,8 @@
       };
       return HomePresenter;
     })();
-    app = new HomePresenter;
-    window.app = app;
+    window.app = new HomePresenter;
+    app = window.app;
     return routes = new HomeRoutes;
   });
 }).call(this);
