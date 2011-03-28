@@ -60,6 +60,55 @@
   }
   $(document).ready(function() {
     var ContactFormView, HomeModel, HomePresenter, HomeRoutes, HomeView, HorizontalSliderView, ImageDisplayerView, ImagePanelView, ManyImagesView, SlideShowView, app, routes;
+    (function(jQuery) {
+      var $;
+      $ = jQuery;
+      return $.fn.mouseextremes = function(percent) {
+        var el;
+        if (percent == null) {
+          percent = 10;
+        }
+        el = $(this);
+        return el.mousemove(function(e) {
+          var fromBottom, fromLeft, fromRight, fromTop, height, width, x, y;
+          x = e.pageX - el.offset().left;
+          y = e.pageY - el.offset().top;
+          width = el.width();
+          height = el.height();
+          fromRight = (width - x) / width * 100;
+          fromLeft = x / width * 100;
+          fromTop = y / height * 100;
+          fromBottom = (height - y) / height * 100;
+          false && console.log("          top " + fromTop + "          bottom " + fromBottom + "          left " + fromLeft + "          right " + fromRight + "          ");
+          if (fromTop <= percent) {
+            el.trigger("mouseextremetop", ["top"]);
+          } else {
+            el.trigger("mousenotextremetop", ["top"]);
+          }
+          if (fromBottom <= percent) {
+            el.trigger("mouseextremebottom");
+          } else {
+            el.trigger("mousenotextremebottom");
+          }
+          if (fromLeft <= percent) {
+            el.trigger("mouseextremeleft");
+          } else {
+            el.trigger("mousenotextremeleft");
+          }
+          if (fromRight <= percent) {
+            el.trigger("mouseexremeright");
+          } else {
+            el.trigger("mousenotextremeright");
+          }
+          return el.mouseleave(function() {
+            el.trigger("mousenotextremetop");
+            el.trigger("mousenotextremebottom");
+            el.trigger("mousenotextremeleft");
+            return el.trigger("mousenotextremeright");
+          });
+        });
+      };
+    })(jQuery);
     SlideShowView = (function() {
       __extends(SlideShowView, Backbone.View);
       function SlideShowView() {
@@ -449,7 +498,9 @@
       function HorizontalSliderView(width, height) {
         this.width = width != null ? width : 300;
         this.height = height != null ? height : 300;
-        this.currentPanelEl = __bind(this.currentPanelEl, this);;
+        this.slideUpSmall = __bind(this.slideUpSmall, this);;
+        this.handleMouseExtremeBottom = __bind(this.handleMouseExtremeBottom, this);;
+        this.handleMouseNotExtremeBottom = __bind(this.handleMouseNotExtremeBottom, this);;
         HorizontalSliderView.__super__.constructor.apply(this, arguments);
         _.bindAll(this);
         this.el = div("");
@@ -468,16 +519,32 @@
         $(this.el).append(this.slideWrapper);
         this.panelCount = 0;
         this.currentPanel = 0;
+        this.slidingState = false;
+        this.slidingInterval = null;
+        this.el.mouseextremes();
+        this.el.bind("mouseextremebottom", this.handleMouseExtremeBottom);
+        this.el.bind("mousenotextremebottom", this.handleMouseNotExtremeBottom);
         return this;
       }
-      HorizontalSliderView.prototype.currentPanelEl = function() {
-        var ret;
-        ret = this.el.find("[data-index='" + this.currentPanel + "']");
-        return ret;
+      HorizontalSliderView.prototype.handleMouseNotExtremeBottom = function() {
+        this.slidingState = false;
+        return clearInterval(this.slidingInterval);
+      };
+      HorizontalSliderView.prototype.handleMouseExtremeBottom = function() {
+        if (this.slidingState !== false) {
+          return;
+        }
+        this.slidingState = "up";
+        clearInterval(this.slidingInterval);
+        return this.slidingInterval = setInterval(this.slideUpSmall, 10);
+      };
+      HorizontalSliderView.prototype.slideUpSmall = function() {
+        return this.currentPanelEl.css("top", this.currentPanelEl.position().top - 1 + "px");
       };
       HorizontalSliderView.prototype.goto = function(index) {
         var translateX;
         this.currentPanel = index;
+        this.currentPanelEl = this.el.find("[data-index='" + this.currentPanel + "']");
         if (z.browser.webkit) {
           translateX = -1 * (index * this.width);
           return z(this.slideWrapper[0]).anim({
@@ -561,7 +628,7 @@
         return this.imageDisplayer.showImage(url);
       };
       HomeView.prototype.displayFirstImage = function() {
-        return this.thumbsView.currentPanelEl().find("img:first").click();
+        return this.thumbsView.currentPanelEl.find("img:first").click();
       };
       HomeView.prototype.addImage = function(urls) {};
       HomeView.prototype.slideThumbnails = function(outOrIn) {

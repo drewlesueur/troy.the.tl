@@ -2,8 +2,11 @@ $(document).ready () ->
   
   module("Slideshow")
   
-  test "The title should be 'Troy Brinkerhoff'", () ->
-    equal "Troy Brinkerhoff", document.title, "the title is what it should be"
+  asyncTest "The title should be 'Troy Brinkerhoff'", () ->
+    document.location.href = "#home"
+    _.wait 200, ->
+      equal "Troy Brinkerhoff", document.title, "the title is what it should be"
+      start()
 
   test "Should see Online Viewing", () ->
     equal 1, $('[href="http://troybrinkerhoff.com/onlineviewing/"]').length
@@ -35,12 +38,23 @@ $(document).ready () ->
         equal $('.left-slide-show-arrow').css("display"), "none"
         start()
 
-  test "panel should scroll when hovering over the bottom", ->
-    equal app.thumbsView.slideState, false
-    app.thumbsView.handleBottomHover()
-    equal app.thumbsView.slideState, true
-    app.thumbsView.handleNotBottomHover()
-    equal app.thumbsView.slideState, false
+  asyncTest "panel should scroll when hovering over the bottom", ->
+    document.location.href = "#galleries/portrait"
+    _.wait 200, ->
+      thumbsView = app.view.thumbsView
+      equal thumbsView.slidingState, false
+      thumbsView.handleMouseExtremeBottom()
+      equal thumbsView.slidingState, "up"
+      console.log thumbsView.currentPanelEl
+      topp = thumbsView.currentPanelEl.position().top
+      _.wait 100, ->
+        equal thumbsView.currentPanelEl.position().top < topp, 1
+        thumbsView.handleMouseNotExtremeBottom()
+        topp = thumbsView.currentPanelEl.position().top
+        equal thumbsView.slidingState, false
+        _.wait 100, ->
+          equal thumbsView.currentPanelEl.position().top, topp
+          start()
 
 
 

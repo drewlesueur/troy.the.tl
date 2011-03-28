@@ -43,6 +43,59 @@
   if !window.console.log
     window.console.log = () ->
   $(document).ready () ->
+    
+    #jQuery plugin for moving to the extremities of an element
+    do (jQuery) ->
+      $ = jQuery
+      $.fn.mouseextremes = (percent=10) ->
+
+        el = $ this
+        el.mousemove (e) ->
+          x = e.pageX - el.offset().left
+          y = e.pageY - el.offset().top
+
+          width = el.width()
+          height = el.height()
+
+          fromRight = (width - x) / width * 100
+          fromLeft = x / width * 100
+
+          fromTop = y / height * 100
+          fromBottom = (height - y) / height * 100 # or 100 - fromTop
+           
+          false and console.log "
+          top #{fromTop}
+          bottom #{fromBottom}
+          left #{fromLeft}
+          right #{fromRight}
+          "
+          if fromTop <= percent
+            el.trigger("mouseextremetop", ["top"])
+          else
+            el.trigger "mousenotextremetop", ["top"]
+
+          if fromBottom <= percent
+            el.trigger "mouseextremebottom"
+          else
+            el.trigger "mousenotextremebottom"
+
+          if fromLeft <= percent
+            el.trigger "mouseextremeleft"
+          else
+            el.trigger "mousenotextremeleft"
+
+          if fromRight <= percent
+            el.trigger "mouseexremeright"
+          else
+            el.trigger "mousenotextremeright"
+
+          el.mouseleave ->
+            el.trigger "mousenotextremetop"
+            el.trigger "mousenotextremebottom"
+            el.trigger "mousenotextremeleft"
+            el.trigger "mousenotextremeright"
+
+
 
     #trying the Model View Presenter pattern
 
@@ -336,13 +389,32 @@
         $(@el).append @slideWrapper
         @panelCount = 0
         @currentPanel = 0
+        @slidingState = false # could be "up" or "down"
+        @slidingInterval = null
+        @el.mouseextremes()
+        @el.bind "mouseextremebottom", @handleMouseExtremeBottom 
+        @el.bind "mousenotextremebottom", @handleMouseNotExtremeBottom 
+
+
         return this
-      currentPanelEl: () =>
-        ret =  @el.find("[data-index='#{@currentPanel}']")
-        return ret
+      handleMouseNotExtremeBottom: =>
+        @slidingState = false
+        clearInterval @slidingInterval
+
+
+      handleMouseExtremeBottom: () =>
+        if @slidingState isnt false then return
+        @slidingState = "up"
+        clearInterval @slidingInterval
+        @slidingInterval = setInterval @slideUpSmall, 10
+
+      slideUpSmall: () =>
+        @currentPanelEl.css "top", @currentPanelEl.position().top - 1 + "px"
 
       goto: (index) ->
         @currentPanel = index
+        # could have also used a hash to find it instead of a dom lookup
+        @currentPanelEl = @el.find("[data-index='#{@currentPanel}']")
         if z.browser.webkit
           translateX =  (-1 * (index * @width)) 
           z(@slideWrapper[0]).anim "translateX" : translateX + "px"
@@ -405,7 +477,7 @@
       setImage: (url) ->
         @imageDisplayer.showImage url
       displayFirstImage: () =>
-        @thumbsView.currentPanelEl().find("img:first").click()
+        @thumbsView.currentPanelEl.find("img:first").click()
         
       addImage: (urls) ->
         return
