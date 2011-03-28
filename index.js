@@ -554,14 +554,14 @@
         }
       };
       HomeView.prototype.slideBanner = function(upOrDown) {
-        var slideAmt, top, translate;
-        slideAmt = 550;
+        var bottom, slideAmt, translate;
+        slideAmt = 50;
         if (upOrDown === "up") {
-          translate = "-" + slideAmt + "px";
-          top = 0;
-        } else {
           translate = 0;
-          top = "" + slideAmt + "px";
+          bottom = "" + slideAmt + "px";
+        } else {
+          translate = "" + slideAmt + "px";
+          bottom = 0;
         }
         if (z.browser.webkit) {
           return z("#banner").anim({
@@ -569,7 +569,7 @@
           });
         } else {
           return $("#banner").animate({
-            "top": top
+            "bottom": bottom
           });
         }
       };
@@ -635,7 +635,7 @@
           this.slideShow.start();
           this.view.galleryState = "";
           this.view.slideThumbnails("in");
-          return this.view.slideBanner("down");
+          return this.view.slideBanner("up");
         }, this));
       }
       HomePresenter.prototype.handleLinkClick = function(linkName) {
@@ -649,7 +649,7 @@
         }
         this.view.galleryState = linkName;
         this.view.slideThumbnails("out");
-        this.view.slideBanner("up");
+        this.view.slideBanner("down");
         gallery_name = "gallery_" + linkName.toLowerCase();
         this.view.thumbsView.goto(this.linkPanelMap[linkName]);
         return this.view.displayFirstImage();
@@ -659,7 +659,7 @@
       };
       HomePresenter.prototype.handleGalleriesChange = function(event) {
         var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _i, _len, _len2, _ref, _ref2, _ref3;
-        _ref = k.s(this.model.get("galleries").gallery_test.images, 0, 3);
+        _ref = k.s(this.model.get("galleries").gallery_slideshow.images, 0);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           image = _ref[_i];
           this.slideShow.addPicture(image);

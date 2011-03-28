@@ -24,7 +24,7 @@
       equal(app.slideShow.index, 0);
       return start();
     });
-    return asyncTest("Clicking right slideshow arrow should change the images", function() {
+    asyncTest("Clicking right slideshow arrow should change the images", function() {
       var rightArrow;
       app.slideShow.index = 0;
       rightArrow = app.slideShow.el.find(".right-slide-show-arrow");
@@ -35,6 +35,34 @@
       rightArrow.click();
       equal(app.slideShow.index, 0);
       return start();
+    });
+    test("The background should be a gray", function() {
+      return equal($('body').css("background-color"), "rgb(196, 196, 196)");
+    });
+    _.mixin({
+      wait: function(time, func) {
+        return setTimeout(func, time);
+      }
+    });
+    asyncTest("The banner should go to the bottom when clicking on a gallery link", function() {
+      var clickLink;
+      $('#main-logo').click();
+      clickLink = function() {
+        $('.nav').first().click();
+        return _.wait(1000, function() {
+          console.log($('#banner').css('bottom'));
+          if ($('#banner').css("bottom") === "0") {
+            equal($('#banner').css("bottom"), 0);
+          } else {
+            equal($('#banner').css("-webkit-transform"), "matrix(1, 0, 0, 1, 0, 50)");
+          }
+          return start();
+        });
+      };
+      return clickLink();
+    });
+    return test("I should see the banner as an image", function() {
+      return equal($('#banner-img[src="banner.png"]').length, 1);
     });
   });
 }).call(this);

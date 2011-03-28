@@ -388,17 +388,17 @@
         else
           $('#thumbs').animate({right: right})
       slideBanner: (upOrDown) ->
-        slideAmt = 550
+        slideAmt = 50
         if upOrDown is "up"
-          translate = "-#{slideAmt}px"
-          top = 0
+          translate = 0 #"-#{slideAmt}px"
+          bottom = "#{slideAmt}px"
         else
-          translate = 0
-          top = "#{slideAmt}px"
+          translate = "#{slideAmt}px"
+          bottom = 0
         if z.browser.webkit
           z("#banner").anim "translateY" : translate
         else
-          $("#banner").animate "top" : top
+          $("#banner").animate "bottom" : bottom
       hideViewer: () =>
         $('#viewer').hide()
 
@@ -455,7 +455,7 @@
           @slideShow.start()
           @view.galleryState =  ""
           @view.slideThumbnails "in"
-          @view.slideBanner "down"
+          @view.slideBanner "up"
       handleLinkClick: (linkName) =>
         if @slideShow.hidden == false
           @slideShow.hide()
@@ -464,7 +464,7 @@
           return
         @view.galleryState = linkName
         @view.slideThumbnails "out"
-        @view.slideBanner "up"
+        @view.slideBanner "down"
         gallery_name = "gallery_" + linkName.toLowerCase() 
         @view.thumbsView.goto @linkPanelMap[linkName]
         @view.displayFirstImage() 
@@ -472,7 +472,7 @@
       handleImagePanelImageClicked: (meta) =>
         @view.setImage meta.image
       handleGalleriesChange: (event ) =>
-        for image in k.s @model.get("galleries").gallery_test.images, 0,3
+        for image in k.s @model.get("galleries").gallery_slideshow.images, 0
           @slideShow.addPicture image
         @slideShow.init()
         @view.clearNavLinks()

@@ -36,6 +36,27 @@ $(document).ready () ->
     equal app.slideShow.index, 0
     start()
 
-    
+  test "The background should be a gray", ->
+    equal $('body').css("background-color"), "rgb(196, 196, 196)"
 
+  _.mixin
+    wait: (time, func)->
+      setTimeout func, time
 
+  asyncTest "The banner should go to the bottom when clicking on a gallery link", ->
+    $('#main-logo').click()
+    clickLink = ->
+      $('.nav').first().click()
+      _.wait 1000, ->
+        console.log $('#banner').css('bottom')
+        if $('#banner').css("bottom") == "0"
+          equal $('#banner').css("bottom"), 0
+        else
+          equal $('#banner').css("-webkit-transform"), "matrix(1, 0, 0, 1, 0, 50)"
+        
+        start()
+    clickLink()
+
+  test "I should see the banner as an image", ->
+    equal $('#banner-img[src="banner.png"]').length, 1
+      
