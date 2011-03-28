@@ -59,7 +59,7 @@
     window.console.log = function() {};
   }
   $(document).ready(function() {
-    var ContactFormView, HomeModel, HomePresenter, HomeView, HorizontalSliderView, ImageDisplayerView, ImagePanelView, ManyImagesView, SlideShowView, app;
+    var ContactFormView, HomeModel, HomePresenter, HomeRoutes, HomeView, HorizontalSliderView, ImageDisplayerView, ImagePanelView, ManyImagesView, SlideShowView, app, routes;
     SlideShowView = (function() {
       __extends(SlideShowView, Backbone.View);
       function SlideShowView() {
@@ -399,7 +399,6 @@
         this.el.css({
           width: "" + this.width + "px",
           height: "" + this.height + "px",
-          "background-color": "rgb(70,70,70)",
           position: "absolute",
           top: 0,
           overflow: "hidden"
@@ -469,9 +468,7 @@
       function HomeView() {
         this.showViewer = __bind(this.showViewer, this);;
         this.hideViewer = __bind(this.hideViewer, this);;
-        this.displayFirstImage = __bind(this.displayFirstImage, this);;
-        this.triggerLinkClick = __bind(this.triggerLinkClick, this);;
-        this.triggerMainLogoClick = __bind(this.triggerMainLogoClick, this);;        HomeView.__super__.constructor.apply(this, arguments);
+        this.displayFirstImage = __bind(this.displayFirstImage, this);;        HomeView.__super__.constructor.apply(this, arguments);
       }
       __extends(HomeView, Backbone.View);
       HomeView.prototype.initialize = function() {
@@ -481,7 +478,6 @@
         this.el = $('#home-wrapper');
         this.state = "home";
         this.thumbGroupings = [];
-        $('#main-logo').click(this.triggerMainLogoClick);
         this.thumbsView = new HorizontalSliderView(this.thumbsWidth, 640);
         $('#thumbs').append(this.thumbsView.el);
         this.imageDisplayer = new ImageDisplayerView($('#viewer'));
@@ -503,32 +499,8 @@
           });
         }, this));
       };
-      HomeView.prototype.triggerMainLogoClick = function() {
-        return this.trigger("homeclick");
-      };
       HomeView.prototype.setImage = function(url) {
         return this.imageDisplayer.showImage(url);
-      };
-      HomeView.prototype.clearNavLinks = function() {
-        return this.el.find("#links").empty();
-      };
-      HomeView.prototype.addNavLink = function(linkName, linkAddress, type) {
-        var a;
-        if (linkAddress == null) {
-          linkAddress = '#';
-        }
-        a = $("<a class='nav' href='" + linkAddress + "'>" + linkName + "</a>");
-        this.el.find("#links").append(a);
-        if (type === "normal") {
-          return;
-        }
-        return a.bind("click", __bind(function(event) {
-          event.preventDefault();
-          return this.triggerLinkClick(linkName);
-        }, this));
-      };
-      HomeView.prototype.triggerLinkClick = function(linkName) {
-        return this.trigger("link", linkName);
       };
       HomeView.prototype.displayFirstImage = function() {
         return this.thumbsView.currentPanelEl().find("img:first").click();
@@ -611,6 +583,24 @@
       };
       return ManyImagesView;
     })();
+    HomeRoutes = (function() {
+      function HomeRoutes() {
+        this.home = __bind(this.home, this);;
+        this.gallery = __bind(this.gallery, this);;        HomeRoutes.__super__.constructor.apply(this, arguments);
+      }
+      __extends(HomeRoutes, Backbone.Controller);
+      HomeRoutes.prototype.routes = {
+        "galleries/:gallery": "gallery",
+        "home": "home"
+      };
+      HomeRoutes.prototype.gallery = function(galleryName) {
+        return app.handleLinkClick(galleryName);
+      };
+      HomeRoutes.prototype.home = function() {
+        return app.handleHomeClick();
+      };
+      return HomeRoutes;
+    })();
     HomePresenter = (function() {
       function HomePresenter() {
         this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);;
@@ -627,19 +617,18 @@
           opacity: "0.5"
         };
         this.model.bind("change:galleries", this.handleGalleriesChange);
-        this.view.bind("link", this.handleLinkClick);
         this.model.loadGalleries();
-        this.view.bind("homeclick", __bind(function() {
-          this.view.hideViewer();
-          this.slideShow.show();
-          this.slideShow.start();
-          this.view.galleryState = "";
-          this.view.slideThumbnails("in");
-          return this.view.slideBanner("up");
-        }, this));
       }
+      HomePresenter.prototype.handleHomeClick = function() {
+        this.view.hideViewer();
+        this.slideShow.show();
+        this.slideShow.start();
+        this.view.galleryState = "";
+        return this.view.slideThumbnails("in");
+      };
       HomePresenter.prototype.handleLinkClick = function(linkName) {
         var gallery_name;
+        linkName = k.capitalize(linkName);
         if (this.slideShow.hidden === false) {
           this.slideShow.hide();
           this.view.showViewer();
@@ -649,7 +638,6 @@
         }
         this.view.galleryState = linkName;
         this.view.slideThumbnails("out");
-        this.view.slideBanner("down");
         gallery_name = "gallery_" + linkName.toLowerCase();
         this.view.thumbsView.goto(this.linkPanelMap[linkName]);
         return this.view.displayFirstImage();
@@ -665,14 +653,12 @@
           this.slideShow.addPicture(image);
         }
         this.slideShow.init();
-        this.view.clearNavLinks();
         this.linkPanelMap = {};
         galleryIndex = 0;
         _ref2 = this.model.get("galleries");
         for (gallery in _ref2) {
           info = _ref2[gallery];
           linkName = k.capitalize(k(gallery).s("gallery_".length));
-          this.view.addNavLink(linkName, "#");
           imagePanel = new ImagePanelView;
           imagePanel.linkName = linkName;
           imagePanel.bind("click", __bind(function(meta) {
@@ -693,11 +679,12 @@
           this.linkPanelMap[linkName] = galleryIndex;
           galleryIndex++;
         }
-        return this.view.addNavLink("Online Viewing", "http://troybrinkerhoff.com/onlineviewing/", "normal");
+        return Backbone.history.start();
       };
       return HomePresenter;
     })();
     app = new HomePresenter;
-    return window.app = app;
+    window.app = app;
+    return routes = new HomeRoutes;
   });
 }).call(this);

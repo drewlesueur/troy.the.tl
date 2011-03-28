@@ -278,7 +278,6 @@
         @el.css
           width: "#{@width}px"
           height: "#{@height}px"
-          "background-color": "rgb(70,70,70)"
           position: "absolute"
           top: 0
           overflow: "hidden"
@@ -334,8 +333,6 @@
         @el = $('#home-wrapper')
         @state = "home"
         @thumbGroupings = []
-        $('#main-logo').click @triggerMainLogoClick
-          
         @thumbsView = new HorizontalSliderView @thumbsWidth, 640
         $('#thumbs').append @thumbsView.el
         @imageDisplayer = new ImageDisplayerView $('#viewer')
@@ -355,22 +352,8 @@
                 alert "Error while sending contact form"
 
 
-      triggerMainLogoClick: () =>
-        @trigger "homeclick"
       setImage: (url) ->
         @imageDisplayer.showImage url
-      clearNavLinks: () ->
-        @el.find("#links").empty()
-      addNavLink: (linkName, linkAddress='#', type) ->
-        a = $ "<a class='nav' href='#{linkAddress}'>#{linkName}</a>"
-        @el.find("#links").append a
-        if type is "normal"
-          return
-        a.bind "click", (event) =>
-          event.preventDefault();
-          @triggerLinkClick linkName
-      triggerLinkClick: (linkName) =>
-        @trigger "link", linkName
       displayFirstImage: () =>
         @thumbsView.currentPanelEl().find("img:first").click()
         
@@ -429,9 +412,15 @@
         
         
         
-        
+    class HomeRoutes extends Backbone.Controller
+      routes:
+        "galleries/:gallery" : "gallery"
+        "home" : "home"
 
-
+      gallery: (galleryName) =>
+        app.handleLinkClick galleryName
+      home: () =>
+        app.handleHomeClick()
 
     class HomePresenter
       constructor: () ->
@@ -447,16 +436,16 @@
           height: "43px"
           opacity: "0.5"
         @model.bind "change:galleries", @handleGalleriesChange
-        @view.bind "link", @handleLinkClick
         @model.loadGalleries()
-        @view.bind "homeclick", () =>
+      handleHomeClick: () ->
           @view.hideViewer()
           @slideShow.show()
           @slideShow.start()
           @view.galleryState =  ""
           @view.slideThumbnails "in"
-          @view.slideBanner "up"
+
       handleLinkClick: (linkName) =>
+        linkName = k.capitalize linkName
         if @slideShow.hidden == false
           @slideShow.hide()
           @view.showViewer()
@@ -464,7 +453,6 @@
           return
         @view.galleryState = linkName
         @view.slideThumbnails "out"
-        @view.slideBanner "down"
         gallery_name = "gallery_" + linkName.toLowerCase() 
         @view.thumbsView.goto @linkPanelMap[linkName]
         @view.displayFirstImage() 
@@ -475,12 +463,10 @@
         for image in k.s @model.get("galleries").gallery_slideshow.images, 0
           @slideShow.addPicture image
         @slideShow.init()
-        @view.clearNavLinks()
         @linkPanelMap = {}
         galleryIndex = 0
         for gallery, info of @model.get "galleries"
           linkName = k.capitalize(k(gallery).s("gallery_".length))
-          @view.addNavLink linkName, "#"
           imagePanel = new ImagePanelView
           imagePanel.linkName = linkName
           imagePanel.bind "click", (meta) => 
@@ -492,11 +478,12 @@
           @view.thumbsView.addPanel imagePanel
           @linkPanelMap[linkName] = galleryIndex
           galleryIndex++
-        @view.addNavLink "Online Viewing", "http://troybrinkerhoff.com/onlineviewing/", "normal"
+        Backbone.history.start()
 
 
     app = new HomePresenter
     window.app = app
+    routes = new HomeRoutes
 
       
 

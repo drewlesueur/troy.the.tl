@@ -1,5 +1,6 @@
 @siteWidth: 960px;
 @bannerHeight: 35px;
+@lightGray:  rgb(196, 196, 196); 
 
 .arrow {
   font-size: 100px;
@@ -29,11 +30,12 @@ a {
 }
 body {
   font-family: 'CenturyGothicRegular';  
-  background-color: rgb(196, 196, 196); 
+  background-color: @lightGray;
   height: 1200px;
 
 }
 #viewer {
+  margin-top: @bannerHeight;
   .absolute;
 }
 #viewer-img {
@@ -62,7 +64,9 @@ body {
 }
 
 
-
+img a map area{
+  boder: none;  
+}
 
 .shadowy {
   -webkit-box-shadow: 0px 0px 5px #000;
@@ -74,7 +78,6 @@ body {
 }
 
 #main-logo {
-  color: rgb(70,70,70);
   .absolute;
   left: 10px;
   font-size: 20px;
@@ -85,13 +88,14 @@ body {
   height: 43px;
 }
 #thumbs {
+  background-color: @lightGray;
   z-index: 990;
   @width: 200px;
   right: -1 * @width;
   .absolute;
-  background-color: green;
   height: 640px;
   width: @width;
+  
 }
 #home {
       
@@ -104,7 +108,6 @@ body {
 #links a {
   margin-right: 15px;
   font-size: 20px;
-  color: rgb(100,100,100);
   text-decoration: none;
 }
 
