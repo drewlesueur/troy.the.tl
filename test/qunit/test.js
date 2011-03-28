@@ -12,19 +12,36 @@
       equal($('.right-slide-show-arrow').length, 1, "The right arrow");
       return equal(1, 1);
     });
-    test("a right arrow should appear if I hover over the right side of the slideshow", function() {
+    asyncTest("a right arrow should appear if I hover over the right side of the slideshow", function() {
       equal($('.right-slide-show-arrow').css("display"), "none");
       app.slideShow.handleRightSideMouseMove();
       equal($('.right-slide-show-arrow').css("display"), "block");
-      app.slideshow.handleNonRightSideMouseMove();
-      return equal($('.right-slide-show-arrow').css("display"), "none");
+      return _.wait(500, function() {
+        app.slideShow.handleNonRightSideMouseMove();
+        return _.wait(500, function() {
+          equal($('.right-slide-show-arrow').css("display"), "none");
+          return start();
+        });
+      });
     });
-    test("a left arrow should appear if I hover over the left side of the slideshow", function() {
+    asyncTest("a left arrow should appear if I hover over the left side of the slideshow", function() {
       equal($('.left-slide-show-arrow').css("display"), "none");
       app.slideShow.handleLeftSideMouseMove();
       equal($('.left-slide-show-arrow').css("display"), "block");
-      app.slideshow.handleNonLeftSideMouseMove();
-      return equal($('.left-slide-show-arrow').css("display"), "none");
+      return _.wait(500, function() {
+        app.slideShow.handleNonLeftSideMouseMove();
+        return _.wait(500, function() {
+          equal($('.left-slide-show-arrow').css("display"), "none");
+          return start();
+        });
+      });
+    });
+    test("panel should scroll when hovering over the bottom", function() {
+      equal(app.thumbsView.slideState, false);
+      app.thumbsView.handleBottomHover();
+      equal(app.thumbsView.slideState, true);
+      app.thumbsView.handleNotBottomHover();
+      return equal(app.thumbsView.slideState, false);
     });
     asyncTest("Clicking the left slideshow arrow should change the images", function() {
       var leftArrow;

@@ -91,10 +91,10 @@
         this.hidden = false;
         this.el.append(this.make("div", {
           "className": "arrow          left-slide-show-arrow"
-        }, "<"));
+        }, "\u25C4"));
         this.el.append(this.make("div", {
           "className": "arrow right-slide-show-arrow"
-        }, ">"));
+        }, "\u25BA"));
         this.el.find('.right-slide-show-arrow').click(__bind(function() {
           this.pause();
           return this.nextPicture();

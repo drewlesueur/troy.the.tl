@@ -14,20 +14,36 @@ $(document).ready () ->
     equal $('.right-slide-show-arrow').length, 1,  "The right arrow"
     equal 1,1
 
-  test "a right arrow should appear if I hover over the right side of the slideshow", ->
+  asyncTest "a right arrow should appear if I hover over the right side of the slideshow", ->
     equal $('.right-slide-show-arrow').css("display"), "none"
     app.slideShow.handleRightSideMouseMove()
     equal $('.right-slide-show-arrow').css("display"), "block"
-    app.slideshow.handleNonRightSideMouseMove()
-    equal $('.right-slide-show-arrow').css("display"), "none"
+    _.wait 500, ->
+      app.slideShow.handleNonRightSideMouseMove()
+      _.wait 500, ->
+        equal $('.right-slide-show-arrow').css("display"), "none"
+        start()
 
 
-  test "a left arrow should appear if I hover over the left side of the slideshow", ->
+  asyncTest "a left arrow should appear if I hover over the left side of the slideshow", ->
     equal $('.left-slide-show-arrow').css("display"), "none"
     app.slideShow.handleLeftSideMouseMove()
     equal $('.left-slide-show-arrow').css("display"), "block"
-    app.slideshow.handleNonLeftSideMouseMove()
-    equal $('.left-slide-show-arrow').css("display"), "none"
+    _.wait 500, ->
+      app.slideShow.handleNonLeftSideMouseMove()
+      _.wait 500, ->
+        equal $('.left-slide-show-arrow').css("display"), "none"
+        start()
+
+  test "panel should scroll when hovering over the bottom", ->
+    equal app.thumbsView.slideState, false
+    app.thumbsView.handleBottomHover()
+    equal app.thumbsView.slideState, true
+    app.thumbsView.handleNotBottomHover()
+    equal app.thumbsView.slideState, false
+
+
+
 
   asyncTest "Clicking the left slideshow arrow should change the images", ->
     app.slideShow.index = 0

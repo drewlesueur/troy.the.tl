@@ -60,9 +60,9 @@
         @index = 0
         @hidden = false
         @el.append @make "div", {"className": "arrow
-          left-slide-show-arrow"}, "<"
+          left-slide-show-arrow"}, "\u25C4"
         @el.append @make "div", {"className":
-          "arrow right-slide-show-arrow"}, ">"
+          "arrow right-slide-show-arrow"}, "\u25BA"
         @el.find('.right-slide-show-arrow').click =>
           @pause()
           @nextPicture()
