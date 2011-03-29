@@ -286,16 +286,26 @@
         
         @el = $ "#contact-form"
         @textarea = @el.find('textarea')
-        @textarea.bind 'focus', (event) =>
-          @textarea.animate({width: "300px", height: "100px"}, 200)
-        @el.bind "blur", (event) =>
-          @textarea.animate({width: "100px", height: "20px"}, 200)
         @el.bind "submit", (event) =>
           event.preventDefault()
-          @trigger "submitContactForm", email: @el.find("#email").val(), message: @el.find('#message').val()
+          @trigger "submitContactForm",
+            email: @el.find("#email").val()
+            message: """
+              Name: #{@el.find('#name').val()}
+              Email: #{@el.find('#email').val()}
+              Phone: #{@el.find('#phone').val()}
+              Date: #{@el.find('#date').val()}
+              Location: #{@el.find('#location').val()}
+              Message:
+              #{@el.find('#message').val()}
+            """
           return false
       blur: () =>
         @el.blur()
+      show: () =>
+        @el.show()
+      hide: () =>
+        @el.hide()
             
 
 
@@ -422,10 +432,10 @@
 
       slideUpSmall: () =>
         #if @currentPanelEl.position().top > @currentPanelEl.height() then return
-        @currentPanelEl.css "top", @currentPanelEl.position().top - 1 + "px"
+        @currentPanelEl.css "top", @currentPanelEl.position().top - 2 + "px"
       slideDownSmall: () =>
         if @currentPanelEl.position().top >= 0 then return
-        @currentPanelEl.css "top", @currentPanelEl.position().top + 1 + "px"
+        @currentPanelEl.css "top", @currentPanelEl.position().top + 2 + "px"
 
       goto: (index) ->
         @currentPanel = index
@@ -474,6 +484,14 @@
         @thumbsView = new HorizontalSliderView @thumbsWidth, 640
         $('#thumbs').append @thumbsView.el
         @imageDisplayer = new ImageDisplayerView $('#viewer')
+
+
+        $('area').mouseover (e) =>
+          @linkAreaMouseOver $(e.target).attr 'alt'
+        $('area').mouseout (e) => 
+          @linkAreaMouseOut $(e.target).attr 'alt'
+
+          
         @contactFormView = new ContactFormView
         #move the callback function out of the view
         @contactFormView.bind "submitContactForm", (formInfo) =>
@@ -490,6 +508,10 @@
                 alert "Error while sending contact form"
 
 
+      linkAreaMouseOver: (name) =>
+        $(".bullet.#{name}").show()
+      linkAreaMouseOut: (name) =>
+        $(".bullet.#{name}").hide()
       setImage: (url) ->
         @imageDisplayer.showImage url
       displayFirstImage: () =>
@@ -554,7 +576,10 @@
       routes:
         "galleries/:gallery" : "gallery"
         "home" : "home"
+        "contact": "contact"
 
+      contact: ()=>
+        app.handleContactClick()
       gallery: (galleryName) =>
         app.handleLinkClick galleryName
       home: () =>
@@ -576,19 +601,28 @@
         @model.bind "change:galleries", @handleGalleriesChange
         @model.loadGalleries()
       handleHomeClick: () ->
-          @view.hideViewer()
-          @slideShow.show()
-          @slideShow.start()
-          @view.galleryState =  ""
-          @view.slideThumbnails "in"
-
+        @view.hideViewer()
+        @slideShow.show()
+        @slideShow.start()
+        @view.galleryState =  ""
+        @view.slideThumbnails "in"
+        @view.contactFormView.hide()
+      handleContactClick: =>
+        @slideShow.hide()
+        @view.hideViewer()
+        @view.contactFormView.show()
+        @view.galleryState =  ""
+        @view.slideThumbnails "in"
+       
       handleLinkClick: (linkName) =>
+        @view.showViewer()
         linkName = k.capitalize linkName
         if @slideShow.hidden == false
           @slideShow.hide()
           @view.showViewer()
         if linkName is @view.galleryState
           return
+        @view.contactFormView.hide()
         @view.galleryState = linkName
         @view.slideThumbnails "out"
         gallery_name = "gallery_" + linkName.toLowerCase() 

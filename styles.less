@@ -1,7 +1,7 @@
 @siteWidth: 960px;
 @bannerHeight: 35px;
 @lightGray:  rgb(196, 196, 196); 
-
+@gray2 : rgb(139, 143, 146);
 .arrow {
   font-size: 60px;
   z-index: 10000;
@@ -10,6 +10,37 @@
   top: 100px;
 }
 
+.bullet {
+  .absolute;  
+  z-index: 100;
+  color: blue;
+  display: none;
+ bottom: -5px;
+}
+
+.bullet.wedding {
+  left: 435px;  
+}
+
+.bullet.portrait {
+  left: 524px;  
+}
+
+.bullet.commercial {
+  left: 621px;  
+}
+
+.bullet.blog {
+  left: 707px;  
+}
+
+.bullet.contact {
+  left: 783px;  
+}
+
+.bullet.onlineviewing {
+  left: 885px;  
+}
 
 .left-slide-show-arrow {
   left: 0;
@@ -56,6 +87,9 @@ body {
 
 #contact-form {
   display: none;
+  .absolute;
+  left: 200px;
+  top: 200px;
   color: #999;
   textarea, input{
     vertical-align: top;
@@ -126,7 +160,7 @@ img {
 
 
 .gray-border {
-  border: 1px solid rgb(139, 143, 146);
+  border: 1px solid @gray2;
 }
 
 #banner-img {

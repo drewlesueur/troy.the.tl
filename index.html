@@ -52,6 +52,40 @@
 <body>
   <div id="wrapper" align="center">
     <div id="home-wrapper">
+      <form id="contact-form">
+      <table>
+      <td valign = "top">
+          <table>
+              <tr>
+                  <td align = "right">name</td><td><input type = "text" name = "name" id="name"></td>
+              </tr><tr>
+                  <td align = "right">email</td><td><input type = "text" name = "email" id="email"></td>
+              </tr><tr>
+                  <td align = "right">phone</td><td><input type = "text" name = "phone" id="phone"></td>
+              </tr><tr>
+                  <td align = "right">event date</td><td><input type = "text" name = "date" id="date"></td>
+              </tr><tr>
+                  <td align = "right">event location</td><td><input type = "text" name = "location"
+                    id="location"></td>
+              </tr>
+              <tr>
+              <td ></td><td><input style = "float:right;" name = "submit" type = "submit" value = "send"><br></td>
+              </tr>
+          </table>
+      </td>
+      <td valign = "top">
+          <textarea style = "height: 150px;" name = "notes" id="message"></textarea>
+      </td>
+      </table>
+       <!--
+        <label for="email">Email: </label>
+        <input name="email" id="email" />
+
+        <label for="message">Comments, Questions</label>
+        <textarea name="message" id="message"></textarea>
+        <input type="submit" value="Send" />
+        -->
+      </form>
       <div id="home-image"></div>
       <div id="viewer"><img id="viewer-img" src="blank.gif" /></div>
       <div id="slide"></div>
@@ -59,6 +93,13 @@
 
       <div id="banner">
         <img id="banner-img" src="http://troybrinkerhoff.com/files/banner.png" usemap="#nav-map"/>
+        <div class="bullet wedding">&#x2022;</div>
+        <div class="bullet portrait">&#x2022;</div>
+        <div class="bullet commercial">&#x2022;</div>
+        <div class="bullet blog">&#x2022;</div>
+        <div class="bullet contact">&#x2022;</div>
+        <div class="bullet onlineviewing">&#x2022;</div>
+
         <map name="nav-map">
           <area shape="rect" coords="0,0,331,35"  id="main-logo"
           href="#home"/>
@@ -72,21 +113,12 @@
           alt="contact" />
           <area shape="rect" coords="821,0,958,35"
           href="http://troybrinkerhoff.com/onlineviewing/"
-          alt="online viewing" />
+          alt="onlineviewing" />
         </map>
         <div id="links">
         </div>
       </div>  
     </div>
-    <form id="contact-form">
-      <label for="email">Email: </label>
-      <input name="email" id="email" />
-
-      <label for="message">Comments, Questions</label>
-      <textarea name="message" id="message"></textarea>
-      <input type="submit" value="Send" />
-
-    </form>
     <div id="footer"> 
       <img src="http://troybrinkerhoff.com/files/copyrt.png" id="copyrt" />
     </div>

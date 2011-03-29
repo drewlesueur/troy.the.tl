@@ -107,3 +107,25 @@ $(document).ready () ->
     equal $('#banner-img[src="http://troybrinkerhoff.com/files/banner.png"]').length, 1
       
 
+  test "When I hover over link items I should see a dot under that link item", ->
+    ball = $('.bullet.wedding')
+    link = $('[href="#galleries/wedding"]')
+    equal ball.css("display"), "none"
+    link.mouseover()
+    equal ball.css("display"), "block"
+    link.mouseout()
+    equal ball.css("display"), "none"
+
+ asyncTest "Contact form", ->
+   contactForm = $('#contact-form')
+   equal contactForm.css("display"), "none", "I should not see the contact form"
+   contactLink = $('[href="#contact"]')
+   contactLink.click()
+   _.wait 1000, ->
+     equal $('#slide-show').css("display"), "none"
+     equal $('#viewer').css('display'), "none"
+     equal contactForm.css('display'), "block"
+     start()
+
+
+

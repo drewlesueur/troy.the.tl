@@ -111,8 +111,31 @@
     test("The background should be a gray", function() {
       return equal($('body').css("background-color"), "rgb(196, 196, 196)");
     });
-    return test("I should see the banner as an image", function() {
+    test("I should see the banner as an image", function() {
       return equal($('#banner-img[src="http://troybrinkerhoff.com/files/banner.png"]').length, 1);
+    });
+    return test("When I hover over link items I should see a dot under that link item", function() {
+      var ball, link;
+      ball = $('.bullet.wedding');
+      link = $('[href="#galleries/wedding"]');
+      equal(ball.css("display"), "none");
+      link.mouseover();
+      equal(ball.css("display"), "block");
+      link.mouseout();
+      return equal(ball.css("display"), "none");
+    });
+  });
+  asyncTest("Contact form", function() {
+    var contactForm, contactLink;
+    contactForm = $('#contact-form');
+    equal(contactForm.css("display"), "none", "I should not see the contact form");
+    contactLink = $('[href="#contact"]');
+    contactLink.click();
+    return _.wait(1000, function() {
+      equal($('#slide-show').css("display"), "none");
+      equal($('#viewer').css('display'), "none");
+      equal(contactForm.css('display'), "block");
+      return start();
     });
   });
 }).call(this);

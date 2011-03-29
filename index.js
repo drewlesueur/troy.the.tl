@@ -366,32 +366,28 @@
     ContactFormView = (function() {
       __extends(ContactFormView, Backbone.View);
       function ContactFormView() {
+        this.hide = __bind(this.hide, this);;
+        this.show = __bind(this.show, this);;
         this.blur = __bind(this.blur, this);;        ContactFormView.__super__.constructor.apply(this, arguments);
         this.el = $("#contact-form");
         this.textarea = this.el.find('textarea');
-        this.textarea.bind('focus', __bind(function(event) {
-          return this.textarea.animate({
-            width: "300px",
-            height: "100px"
-          }, 200);
-        }, this));
-        this.el.bind("blur", __bind(function(event) {
-          return this.textarea.animate({
-            width: "100px",
-            height: "20px"
-          }, 200);
-        }, this));
         this.el.bind("submit", __bind(function(event) {
           event.preventDefault();
           this.trigger("submitContactForm", {
             email: this.el.find("#email").val(),
-            message: this.el.find('#message').val()
+            message: "Name: " + (this.el.find('#name').val()) + "\nEmail: " + (this.el.find('#email').val()) + "\nPhone: " + (this.el.find('#phone').val()) + "\nDate: " + (this.el.find('#date').val()) + "\nLocation: " + (this.el.find('#location').val()) + "\nMessage:\n" + (this.el.find('#message').val())
           });
           return false;
         }, this));
       }
       ContactFormView.prototype.blur = function() {
         return this.el.blur();
+      };
+      ContactFormView.prototype.show = function() {
+        return this.el.show();
+      };
+      ContactFormView.prototype.hide = function() {
+        return this.el.hide();
       };
       return ContactFormView;
     })();
@@ -565,13 +561,13 @@
         return this.slidingInterval = setInterval(this.slideUpSmall, 10);
       };
       HorizontalSliderView.prototype.slideUpSmall = function() {
-        return this.currentPanelEl.css("top", this.currentPanelEl.position().top - 1 + "px");
+        return this.currentPanelEl.css("top", this.currentPanelEl.position().top - 2 + "px");
       };
       HorizontalSliderView.prototype.slideDownSmall = function() {
         if (this.currentPanelEl.position().top >= 0) {
           return;
         }
-        return this.currentPanelEl.css("top", this.currentPanelEl.position().top + 1 + "px");
+        return this.currentPanelEl.css("top", this.currentPanelEl.position().top + 2 + "px");
       };
       HorizontalSliderView.prototype.goto = function(index) {
         var translateX;
@@ -625,7 +621,9 @@
       function HomeView() {
         this.showViewer = __bind(this.showViewer, this);;
         this.hideViewer = __bind(this.hideViewer, this);;
-        this.displayFirstImage = __bind(this.displayFirstImage, this);;        HomeView.__super__.constructor.apply(this, arguments);
+        this.displayFirstImage = __bind(this.displayFirstImage, this);;
+        this.linkAreaMouseOut = __bind(this.linkAreaMouseOut, this);;
+        this.linkAreaMouseOver = __bind(this.linkAreaMouseOver, this);;        HomeView.__super__.constructor.apply(this, arguments);
       }
       __extends(HomeView, Backbone.View);
       HomeView.prototype.initialize = function() {
@@ -638,6 +636,12 @@
         this.thumbsView = new HorizontalSliderView(this.thumbsWidth, 640);
         $('#thumbs').append(this.thumbsView.el);
         this.imageDisplayer = new ImageDisplayerView($('#viewer'));
+        $('area').mouseover(__bind(function(e) {
+          return this.linkAreaMouseOver($(e.target).attr('alt'));
+        }, this));
+        $('area').mouseout(__bind(function(e) {
+          return this.linkAreaMouseOut($(e.target).attr('alt'));
+        }, this));
         this.contactFormView = new ContactFormView;
         return this.contactFormView.bind("submitContactForm", __bind(function(formInfo) {
           return $.ajax({
@@ -655,6 +659,12 @@
             }, this)
           });
         }, this));
+      };
+      HomeView.prototype.linkAreaMouseOver = function(name) {
+        return $(".bullet." + name).show();
+      };
+      HomeView.prototype.linkAreaMouseOut = function(name) {
+        return $(".bullet." + name).hide();
       };
       HomeView.prototype.setImage = function(url) {
         return this.imageDisplayer.showImage(url);
@@ -743,12 +753,17 @@
     HomeRoutes = (function() {
       function HomeRoutes() {
         this.home = __bind(this.home, this);;
-        this.gallery = __bind(this.gallery, this);;        HomeRoutes.__super__.constructor.apply(this, arguments);
+        this.gallery = __bind(this.gallery, this);;
+        this.contact = __bind(this.contact, this);;        HomeRoutes.__super__.constructor.apply(this, arguments);
       }
       __extends(HomeRoutes, Backbone.Controller);
       HomeRoutes.prototype.routes = {
         "galleries/:gallery": "gallery",
-        "home": "home"
+        "home": "home",
+        "contact": "contact"
+      };
+      HomeRoutes.prototype.contact = function() {
+        return app.handleContactClick();
       };
       HomeRoutes.prototype.gallery = function(galleryName) {
         return app.handleLinkClick(galleryName);
@@ -762,7 +777,8 @@
       function HomePresenter() {
         this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);;
         this.handleImagePanelImageClicked = __bind(this.handleImagePanelImageClicked, this);;
-        this.handleLinkClick = __bind(this.handleLinkClick, this);;        _.bindAll(this);
+        this.handleLinkClick = __bind(this.handleLinkClick, this);;
+        this.handleContactClick = __bind(this.handleContactClick, this);;        _.bindAll(this);
         this.slideShow = new SlideShowView;
         this.slideShow.el.attr("id", "slide-show");
         $('#home-wrapper').append(this.slideShow.el);
@@ -781,10 +797,19 @@
         this.slideShow.show();
         this.slideShow.start();
         this.view.galleryState = "";
+        this.view.slideThumbnails("in");
+        return this.view.contactFormView.hide();
+      };
+      HomePresenter.prototype.handleContactClick = function() {
+        this.slideShow.hide();
+        this.view.hideViewer();
+        this.view.contactFormView.show();
+        this.view.galleryState = "";
         return this.view.slideThumbnails("in");
       };
       HomePresenter.prototype.handleLinkClick = function(linkName) {
         var gallery_name;
+        this.view.showViewer();
         linkName = k.capitalize(linkName);
         if (this.slideShow.hidden === false) {
           this.slideShow.hide();
@@ -793,6 +818,7 @@
         if (linkName === this.view.galleryState) {
           return;
         }
+        this.view.contactFormView.hide();
         this.view.galleryState = linkName;
         this.view.slideThumbnails("out");
         gallery_name = "gallery_" + linkName.toLowerCase();
