@@ -47,6 +47,7 @@
   $(document).ready () ->
     
     #jQuery plugin for moving to the extremities of an element
+    # scroller, vertical slider
     do (jQuery) ->
       $ = jQuery
       $.fn.mouseextremes = (percent=10) ->
@@ -98,18 +99,17 @@
             el.trigger "mousenotextremeright"
 
 
-
     #trying the Model View Presenter pattern
 
     class SlideShowView extends Backbone.View
       constructor: () ->
         @el = div ""
         @el.addClass "slide-show-yea"
-        @width = 960
-        @height = 460
+        @width = options.slideShowWidth
+        @height = options.slideShowHeight
         @timer = ""
-        @interval = 6000
-        @fadeSpeed = 1000
+        @interval = options.slideShowInterval * 1000
+        @fadeSpeed = options.slideShowFadeSpeed * 1000
         @el.css position: "relative"
         @indexCount = 0
         @index = 0
@@ -129,6 +129,11 @@
         @rightArrowFading = false
         @leftArrowVisible = false
         @leftArrowFading = false
+        $("body").mousemove (e) =>
+          if $(e.target).is("body") or $(e.target).is("#wrapper")
+            @handleNonLeftSideMouseMove()
+            @handleNonRightSideMouseMove()
+
 
         @el.mouseleave =>
           @handleNonLeftSideMouseMove()
@@ -137,11 +142,11 @@
         @el.mousemove (e) =>
           x = e.pageX - @el.offset().left
           y = e.pageY - @el.offset().top
-          if @el.width() - x < 100
+          if @el.width() - x < options.arrowRange
             @handleRightSideMouseMove()
           else
             @handleNonRightSideMouseMove()
-          if x < 100
+          if x < options.arrowRange
             @handleLeftSideMouseMove()
           else
             @handleNonLeftSideMouseMove()
@@ -249,10 +254,10 @@
         @loading = div "Loading..."
         @loading.css margin: "50px"
 
-        @loadingStater = stater ["Loading", "Loading.", "Loading..", "Loading..."]
+        @loadingStater = stater options.loadingText
         @loading.css color: "white", position: "absolute", top: 0, left: 0, "display": "none"
         @el.append @loading
-        @loadingTimer = setInterval @updateLoader, 250, 
+        @loadingTimer = setInterval @updateLoader, options.loadingSpeed * 1000, 
       updateLoader: () =>
         @loading.html @loadingStater()
       showImage: (url) =>
@@ -403,7 +408,7 @@
         @currentPanel = 0
         @slidingState = false # could be "up" or "down"
         @slidingInterval = null
-        @el.mouseextremes()
+        @el.mouseextremes(options.scrollPercent)
         @el.bind "mouseextremebottom", @handleMouseExtremeBottom 
         @el.bind "mousenotextremebottom", @handleMouseNotExtremeBottom 
         @el.bind "mouseextremetop",  @handleMouseExtremeTop
@@ -419,7 +424,7 @@
         if @slidingState isnt false then return
         @slidingState = "down"
         clearInterval @slidingInterval
-        @slidingInterval = setInterval @slideDownSmall, 10
+        @slidingInterval = setInterval @slideDownSmall, options.thumbnailScrollSpeed
       handleMouseNotExtremeBottom: =>
         if @slidingState is "down" then return
         @slidingState = false
@@ -428,7 +433,7 @@
         if @slidingState isnt false then return
         @slidingState = "up"
         clearInterval @slidingInterval
-        @slidingInterval = setInterval @slideUpSmall, 10
+        @slidingInterval = setInterval @slideUpSmall, options.thumbnailScrollSpeed
 
       slideUpSmall: () =>
         #if @currentPanelEl.position().top > @currentPanelEl.height() then return
@@ -477,11 +482,11 @@
       initialize: () ->
         super
         _.bindAll this
-        @thumbsWidth = 200
+        @thumbsWidth = options.thumbnailBarWidth
         @el = $('#home-wrapper')
         @state = "home"
         @thumbGroupings = []
-        @thumbsView = new HorizontalSliderView @thumbsWidth, 640
+        @thumbsView = new HorizontalSliderView @thumbsWidth, options.thumbnailBarHeight
         $('#thumbs').append @thumbsView.el
         @imageDisplayer = new ImageDisplayerView $('#viewer')
 
@@ -490,6 +495,9 @@
           @linkAreaMouseOver $(e.target).attr 'alt'
         $('area').mouseout (e) => 
           @linkAreaMouseOut $(e.target).attr 'alt'
+
+        $("#banner").css("top", "#{options.bannerStartPosition}px")
+        $("#slide-show").css("margin-top", options.slideShowTopMargin)
 
           
         @contactFormView = new ContactFormView
@@ -534,17 +542,17 @@
         else
           $('#thumbs').animate({right: right})
       slideBanner: (upOrDown) ->
-        slideAmt = 50
+        slideAmt = options.bannerEndPosition - options.bannerStartPosition
         if upOrDown is "up"
           translate = 0 #"-#{slideAmt}px"
-          bottom = "#{slideAmt}px"
+          theTop = options.bannerStartPosition + "px"
         else
           translate = "#{slideAmt}px"
-          bottom = 0
+          theTop = options.bannerEndPosition + "px"
         if z.browser.webkit
           z("#banner").anim "translateY" : translate
         else
-          $("#banner").animate "bottom" : bottom
+          $("#banner").animate "top" : theTop
       hideViewer: () =>
         $('#viewer').hide()
 
@@ -609,6 +617,7 @@
         @slideShow.start()
         @view.galleryState =  ""
         @view.slideThumbnails "in"
+        @view.slideBanner "up"
         @view.contactFormView.hide()
       handleContactClick: =>
         @slideShow.hide()
@@ -616,6 +625,7 @@
         @view.contactFormView.show()
         @view.galleryState =  ""
         @view.slideThumbnails "in"
+        @view.slideBanner "down"
        
       handleLinkClick: (linkName) =>
         @view.showViewer()
@@ -628,6 +638,7 @@
         @view.contactFormView.hide()
         @view.galleryState = linkName
         @view.slideThumbnails "out"
+        @view.slideBanner "down"
         gallery_name = "gallery_" + linkName.toLowerCase() 
         @view.thumbsView.goto @linkPanelMap[linkName]
         @view.displayFirstImage() 

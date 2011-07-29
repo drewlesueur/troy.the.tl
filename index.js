@@ -130,11 +130,11 @@
         this.handleLeftSideMouseMove = __bind(this.handleLeftSideMouseMove, this);
         this.handleNonLeftSideMouseMove = __bind(this.handleNonLeftSideMouseMove, this);        this.el = div("");
         this.el.addClass("slide-show-yea");
-        this.width = 960;
-        this.height = 460;
+        this.width = options.slideShowWidth;
+        this.height = options.slideShowHeight;
         this.timer = "";
-        this.interval = 6000;
-        this.fadeSpeed = 1000;
+        this.interval = options.slideShowInterval * 1000;
+        this.fadeSpeed = options.slideShowFadeSpeed * 1000;
         this.el.css({
           position: "relative"
         });
@@ -159,6 +159,12 @@
         this.rightArrowFading = false;
         this.leftArrowVisible = false;
         this.leftArrowFading = false;
+        $("body").mousemove(__bind(function(e) {
+          if ($(e.target).is("body") || $(e.target).is("#wrapper")) {
+            this.handleNonLeftSideMouseMove();
+            return this.handleNonRightSideMouseMove();
+          }
+        }, this));
         this.el.mouseleave(__bind(function() {
           this.handleNonLeftSideMouseMove();
           return this.handleNonRightSideMouseMove();
@@ -167,12 +173,12 @@
           var x, y;
           x = e.pageX - this.el.offset().left;
           y = e.pageY - this.el.offset().top;
-          if (this.el.width() - x < 100) {
+          if (this.el.width() - x < options.arrowRange) {
             this.handleRightSideMouseMove();
           } else {
             this.handleNonRightSideMouseMove();
           }
-          if (x < 100) {
+          if (x < options.arrowRange) {
             return this.handleLeftSideMouseMove();
           } else {
             return this.handleNonLeftSideMouseMove();
@@ -318,7 +324,7 @@
         this.loading.css({
           margin: "50px"
         });
-        this.loadingStater = stater(["Loading", "Loading.", "Loading..", "Loading..."]);
+        this.loadingStater = stater(options.loadingText);
         this.loading.css({
           color: "white",
           position: "absolute",
@@ -327,7 +333,7 @@
           "display": "none"
         });
         this.el.append(this.loading);
-        this.loadingTimer = setInterval(this.updateLoader, 250);
+        this.loadingTimer = setInterval(this.updateLoader, options.loadingSpeed * 1000);
       }
       ImageDisplayerView.prototype.updateLoader = function() {
         return this.loading.html(this.loadingStater());
@@ -523,7 +529,7 @@
         this.currentPanel = 0;
         this.slidingState = false;
         this.slidingInterval = null;
-        this.el.mouseextremes();
+        this.el.mouseextremes(options.scrollPercent);
         this.el.bind("mouseextremebottom", this.handleMouseExtremeBottom);
         this.el.bind("mousenotextremebottom", this.handleMouseNotExtremeBottom);
         this.el.bind("mouseextremetop", this.handleMouseExtremeTop);
@@ -543,7 +549,7 @@
         }
         this.slidingState = "down";
         clearInterval(this.slidingInterval);
-        return this.slidingInterval = setInterval(this.slideDownSmall, 10);
+        return this.slidingInterval = setInterval(this.slideDownSmall, options.thumbnailScrollSpeed);
       };
       HorizontalSliderView.prototype.handleMouseNotExtremeBottom = function() {
         if (this.slidingState === "down") {
@@ -558,7 +564,7 @@
         }
         this.slidingState = "up";
         clearInterval(this.slidingInterval);
-        return this.slidingInterval = setInterval(this.slideUpSmall, 10);
+        return this.slidingInterval = setInterval(this.slideUpSmall, options.thumbnailScrollSpeed);
       };
       HorizontalSliderView.prototype.slideUpSmall = function() {
         return this.currentPanelEl.css("top", this.currentPanelEl.position().top - 2 + "px");
@@ -630,11 +636,11 @@
       HomeView.prototype.initialize = function() {
         HomeView.__super__.initialize.apply(this, arguments);
         _.bindAll(this);
-        this.thumbsWidth = 200;
+        this.thumbsWidth = options.thumbnailBarWidth;
         this.el = $('#home-wrapper');
         this.state = "home";
         this.thumbGroupings = [];
-        this.thumbsView = new HorizontalSliderView(this.thumbsWidth, 640);
+        this.thumbsView = new HorizontalSliderView(this.thumbsWidth, options.thumbnailBarHeight);
         $('#thumbs').append(this.thumbsView.el);
         this.imageDisplayer = new ImageDisplayerView($('#viewer'));
         $('area').mouseover(__bind(function(e) {
@@ -643,6 +649,8 @@
         $('area').mouseout(__bind(function(e) {
           return this.linkAreaMouseOut($(e.target).attr('alt'));
         }, this));
+        $("#banner").css("top", "" + options.bannerStartPosition + "px");
+        $("#slide-show").css("margin-top", options.slideShowTopMargin);
         this.contactFormView = new ContactFormView;
         return this.contactFormView.bind("submitContactForm", __bind(function(formInfo) {
           return $.ajax({
@@ -696,14 +704,14 @@
         }
       };
       HomeView.prototype.slideBanner = function(upOrDown) {
-        var bottom, slideAmt, translate;
-        slideAmt = 50;
+        var slideAmt, theTop, translate;
+        slideAmt = options.bannerEndPosition - options.bannerStartPosition;
         if (upOrDown === "up") {
           translate = 0;
-          bottom = "" + slideAmt + "px";
+          theTop = options.bannerStartPosition + "px";
         } else {
           translate = "" + slideAmt + "px";
-          bottom = 0;
+          theTop = options.bannerEndPosition + "px";
         }
         if (z.browser.webkit) {
           return z("#banner").anim({
@@ -711,7 +719,7 @@
           });
         } else {
           return $("#banner").animate({
-            "bottom": bottom
+            "top": theTop
           });
         }
       };
@@ -802,6 +810,7 @@
         this.slideShow.start();
         this.view.galleryState = "";
         this.view.slideThumbnails("in");
+        this.view.slideBanner("up");
         return this.view.contactFormView.hide();
       };
       HomePresenter.prototype.handleContactClick = function() {
@@ -809,7 +818,8 @@
         this.view.hideViewer();
         this.view.contactFormView.show();
         this.view.galleryState = "";
-        return this.view.slideThumbnails("in");
+        this.view.slideThumbnails("in");
+        return this.view.slideBanner("down");
       };
       HomePresenter.prototype.handleLinkClick = function(linkName) {
         var gallery_name;
@@ -825,6 +835,7 @@
         this.view.contactFormView.hide();
         this.view.galleryState = linkName;
         this.view.slideThumbnails("out");
+        this.view.slideBanner("down");
         gallery_name = "gallery_" + linkName.toLowerCase();
         this.view.thumbsView.goto(this.linkPanelMap[linkName]);
         return this.view.displayFirstImage();
