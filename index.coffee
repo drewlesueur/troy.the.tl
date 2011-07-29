@@ -509,8 +509,11 @@
 
 
       linkAreaMouseOver: (name) =>
+        #blue dot
+        return
         $(".bullet.#{name}").show()
       linkAreaMouseOut: (name) =>
+        return
         $(".bullet.#{name}").hide()
       setImage: (url) ->
         @imageDisplayer.showImage url

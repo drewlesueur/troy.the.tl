@@ -115,20 +115,20 @@
     SlideShowView = (function() {
       __extends(SlideShowView, Backbone.View);
       function SlideShowView() {
-        this.init = __bind(this.init, this);;
-        this.start = __bind(this.start, this);;
-        this.pause = __bind(this.pause, this);;
-        this.tick = __bind(this.tick, this);;
-        this.show = __bind(this.show, this);;
-        this.hide = __bind(this.hide, this);;
-        this.incIndex = __bind(this.incIndex, this);;
-        this.decIndex = __bind(this.decIndex, this);;
-        this.prevPicture = __bind(this.prevPicture, this);;
-        this.nextPicture = __bind(this.nextPicture, this);;
-        this.handleRightSideMouseMove = __bind(this.handleRightSideMouseMove, this);;
-        this.handleNonRightSideMouseMove = __bind(this.handleNonRightSideMouseMove, this);;
-        this.handleLeftSideMouseMove = __bind(this.handleLeftSideMouseMove, this);;
-        this.handleNonLeftSideMouseMove = __bind(this.handleNonLeftSideMouseMove, this);;        this.el = div("");
+        this.init = __bind(this.init, this);
+        this.start = __bind(this.start, this);
+        this.pause = __bind(this.pause, this);
+        this.tick = __bind(this.tick, this);
+        this.show = __bind(this.show, this);
+        this.hide = __bind(this.hide, this);
+        this.incIndex = __bind(this.incIndex, this);
+        this.decIndex = __bind(this.decIndex, this);
+        this.prevPicture = __bind(this.prevPicture, this);
+        this.nextPicture = __bind(this.nextPicture, this);
+        this.handleRightSideMouseMove = __bind(this.handleRightSideMouseMove, this);
+        this.handleNonRightSideMouseMove = __bind(this.handleNonRightSideMouseMove, this);
+        this.handleLeftSideMouseMove = __bind(this.handleLeftSideMouseMove, this);
+        this.handleNonLeftSideMouseMove = __bind(this.handleNonLeftSideMouseMove, this);        this.el = div("");
         this.el.addClass("slide-show-yea");
         this.width = 960;
         this.height = 460;
@@ -310,8 +310,8 @@
     ImageDisplayerView = (function() {
       __extends(ImageDisplayerView, Backbone.View);
       function ImageDisplayerView(parent) {
-        this.showImage = __bind(this.showImage, this);;
-        this.updateLoader = __bind(this.updateLoader, this);;        this.el = parent || div("");
+        this.showImage = __bind(this.showImage, this);
+        this.updateLoader = __bind(this.updateLoader, this);        this.el = parent || div("");
         this.images = {};
         this.currentImage = $(this.make("img"));
         this.loading = div("Loading...");
@@ -366,9 +366,9 @@
     ContactFormView = (function() {
       __extends(ContactFormView, Backbone.View);
       function ContactFormView() {
-        this.hide = __bind(this.hide, this);;
-        this.show = __bind(this.show, this);;
-        this.blur = __bind(this.blur, this);;        ContactFormView.__super__.constructor.apply(this, arguments);
+        this.hide = __bind(this.hide, this);
+        this.show = __bind(this.show, this);
+        this.blur = __bind(this.blur, this);        ContactFormView.__super__.constructor.apply(this, arguments);
         this.el = $("#contact-form");
         this.textarea = this.el.find('textarea');
         this.el.bind("submit", __bind(function(event) {
@@ -395,8 +395,8 @@
     HomeModel = (function() {
       __extends(HomeModel, Backbone.Model);
       function HomeModel() {
-        this.loadGalleries = __bind(this.loadGalleries, this);;
-        this.loadGalleriesSuccess = __bind(this.loadGalleriesSuccess, this);;        HomeModel.__super__.constructor.apply(this, arguments);
+        this.loadGalleries = __bind(this.loadGalleries, this);
+        this.loadGalleriesSuccess = __bind(this.loadGalleriesSuccess, this);        HomeModel.__super__.constructor.apply(this, arguments);
         _.bindAll(this);
         this.set({
           test: "another thing"
@@ -446,7 +446,7 @@
     ImagePanelView = (function() {
       __extends(ImagePanelView, Backbone.View);
       function ImagePanelView() {
-        this.triggerClick = __bind(this.triggerClick, this);;        ImagePanelView.__super__.constructor.apply(this, arguments);
+        this.triggerClick = __bind(this.triggerClick, this);        ImagePanelView.__super__.constructor.apply(this, arguments);
         this.el = div("");
         _.bindAll(this);
       }
@@ -497,12 +497,12 @@
       function HorizontalSliderView(width, height) {
         this.width = width != null ? width : 300;
         this.height = height != null ? height : 300;
-        this.slideDownSmall = __bind(this.slideDownSmall, this);;
-        this.slideUpSmall = __bind(this.slideUpSmall, this);;
-        this.handleMouseExtremeBottom = __bind(this.handleMouseExtremeBottom, this);;
-        this.handleMouseNotExtremeBottom = __bind(this.handleMouseNotExtremeBottom, this);;
-        this.handleMouseExtremeTop = __bind(this.handleMouseExtremeTop, this);;
-        this.handleMouseNotExtremeTop = __bind(this.handleMouseNotExtremeTop, this);;
+        this.slideDownSmall = __bind(this.slideDownSmall, this);
+        this.slideUpSmall = __bind(this.slideUpSmall, this);
+        this.handleMouseExtremeBottom = __bind(this.handleMouseExtremeBottom, this);
+        this.handleMouseNotExtremeBottom = __bind(this.handleMouseNotExtremeBottom, this);
+        this.handleMouseExtremeTop = __bind(this.handleMouseExtremeTop, this);
+        this.handleMouseNotExtremeTop = __bind(this.handleMouseNotExtremeTop, this);
         HorizontalSliderView.__super__.constructor.apply(this, arguments);
         _.bindAll(this);
         this.el = div("");
@@ -618,14 +618,15 @@
       return HorizontalSliderView;
     })();
     HomeView = (function() {
-      function HomeView() {
-        this.showViewer = __bind(this.showViewer, this);;
-        this.hideViewer = __bind(this.hideViewer, this);;
-        this.displayFirstImage = __bind(this.displayFirstImage, this);;
-        this.linkAreaMouseOut = __bind(this.linkAreaMouseOut, this);;
-        this.linkAreaMouseOver = __bind(this.linkAreaMouseOver, this);;        HomeView.__super__.constructor.apply(this, arguments);
-      }
       __extends(HomeView, Backbone.View);
+      function HomeView() {
+        this.showViewer = __bind(this.showViewer, this);
+        this.hideViewer = __bind(this.hideViewer, this);
+        this.displayFirstImage = __bind(this.displayFirstImage, this);
+        this.linkAreaMouseOut = __bind(this.linkAreaMouseOut, this);
+        this.linkAreaMouseOver = __bind(this.linkAreaMouseOver, this);
+        HomeView.__super__.constructor.apply(this, arguments);
+      }
       HomeView.prototype.initialize = function() {
         HomeView.__super__.initialize.apply(this, arguments);
         _.bindAll(this);
@@ -661,9 +662,11 @@
         }, this));
       };
       HomeView.prototype.linkAreaMouseOver = function(name) {
+        return;
         return $(".bullet." + name).show();
       };
       HomeView.prototype.linkAreaMouseOut = function(name) {
+        return;
         return $(".bullet." + name).hide();
       };
       HomeView.prototype.setImage = function(url) {
@@ -723,8 +726,8 @@
     ManyImagesView = (function() {
       __extends(ManyImagesView, Backbone.View);
       function ManyImagesView() {
-        this.loadSpecific = __bind(this.loadSpecific, this);;
-        this.addImage = __bind(this.addImage, this);;        ManyImagesView.__super__.constructor.apply(this, arguments);
+        this.loadSpecific = __bind(this.loadSpecific, this);
+        this.addImage = __bind(this.addImage, this);        ManyImagesView.__super__.constructor.apply(this, arguments);
         this.images = [];
       }
       ManyImagesView.prototype.addImage = function(url) {
@@ -751,12 +754,13 @@
       return ManyImagesView;
     })();
     HomeRoutes = (function() {
-      function HomeRoutes() {
-        this.home = __bind(this.home, this);;
-        this.gallery = __bind(this.gallery, this);;
-        this.contact = __bind(this.contact, this);;        HomeRoutes.__super__.constructor.apply(this, arguments);
-      }
       __extends(HomeRoutes, Backbone.Controller);
+      function HomeRoutes() {
+        this.home = __bind(this.home, this);
+        this.gallery = __bind(this.gallery, this);
+        this.contact = __bind(this.contact, this);
+        HomeRoutes.__super__.constructor.apply(this, arguments);
+      }
       HomeRoutes.prototype.routes = {
         "galleries/:gallery": "gallery",
         "home": "home",
@@ -775,10 +779,10 @@
     })();
     HomePresenter = (function() {
       function HomePresenter() {
-        this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);;
-        this.handleImagePanelImageClicked = __bind(this.handleImagePanelImageClicked, this);;
-        this.handleLinkClick = __bind(this.handleLinkClick, this);;
-        this.handleContactClick = __bind(this.handleContactClick, this);;        _.bindAll(this);
+        this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);
+        this.handleImagePanelImageClicked = __bind(this.handleImagePanelImageClicked, this);
+        this.handleLinkClick = __bind(this.handleLinkClick, this);
+        this.handleContactClick = __bind(this.handleContactClick, this);        _.bindAll(this);
         this.slideShow = new SlideShowView;
         this.slideShow.el.attr("id", "slide-show");
         $('#home-wrapper').append(this.slideShow.el);
