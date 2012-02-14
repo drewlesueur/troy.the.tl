@@ -1,13 +1,9 @@
 (function() {
-  var div, getEl, img;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  };
+  var div, getEl, img,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
   _.mixin({
     wait: function(time, func) {
       return setTimeout(func, time);
@@ -40,12 +36,15 @@
       }
     }
   });
+
   div = function(str) {
     return $("<div>" + str + "</div>");
   };
+
   img = function(str) {
     return $("<img src='blank.gif'>");
   };
+
   getEl = function(obj) {
     if (_.isString(obj)) {
       return $(obj);
@@ -55,12 +54,11 @@
       return obj && obj.el;
     }
   };
-  if (!window.console) {
-    window.console = {};
-  }
-  if (!window.console.log) {
-    window.console.log = function() {};
-  }
+
+  if (!window.console) window.console = {};
+
+  if (!window.console.log) window.console.log = function() {};
+
   $(document).ready(function() {
     var ContactFormView, HomeModel, HomePresenter, HomeRoutes, HomeView, HorizontalSliderView, ImageDisplayerView, ImagePanelView, ManyImagesView, SlideShowView, app, routes;
     (function(jQuery) {
@@ -68,9 +66,7 @@
       $ = jQuery;
       return $.fn.mouseextremes = function(percent) {
         var el;
-        if (percent == null) {
-          percent = 10;
-        }
+        if (percent == null) percent = 10;
         el = $(this);
         return el.mousemove(function(e) {
           var fromBottom, fromLeft, fromRight, fromTop, height, width, x, y;
@@ -112,8 +108,10 @@
         });
       };
     })(jQuery);
-    SlideShowView = (function() {
-      __extends(SlideShowView, Backbone.View);
+    SlideShowView = (function(_super) {
+
+      __extends(SlideShowView, _super);
+
       function SlideShowView() {
         this.init = __bind(this.init, this);
         this.start = __bind(this.start, this);
@@ -128,7 +126,9 @@
         this.handleRightSideMouseMove = __bind(this.handleRightSideMouseMove, this);
         this.handleNonRightSideMouseMove = __bind(this.handleNonRightSideMouseMove, this);
         this.handleLeftSideMouseMove = __bind(this.handleLeftSideMouseMove, this);
-        this.handleNonLeftSideMouseMove = __bind(this.handleNonLeftSideMouseMove, this);        this.el = div("");
+        this.handleNonLeftSideMouseMove = __bind(this.handleNonLeftSideMouseMove, this);
+        var _this = this;
+        this.el = div("");
         this.el.addClass("slide-show-yea");
         this.width = options.slideShowWidth;
         this.height = options.slideShowHeight;
@@ -147,84 +147,85 @@
         this.el.append(this.make("div", {
           "className": "arrow right-slide-show-arrow"
         }, "\u25BA"));
-        this.el.find('.right-slide-show-arrow').click(__bind(function() {
-          this.pause();
-          return this.nextPicture();
-        }, this));
-        this.el.find('.left-slide-show-arrow').click(__bind(function() {
-          this.pause();
-          return this.prevPicture();
-        }, this));
+        this.el.find('.right-slide-show-arrow').click(function() {
+          _this.pause();
+          return _this.nextPicture();
+        });
+        this.el.find('.left-slide-show-arrow').click(function() {
+          _this.pause();
+          return _this.prevPicture();
+        });
         this.rightArrowVisible = false;
         this.rightArrowFading = false;
         this.leftArrowVisible = false;
         this.leftArrowFading = false;
-        $("body").mousemove(__bind(function(e) {
+        $("body").mousemove(function(e) {
           if ($(e.target).is("body") || $(e.target).is("#wrapper")) {
-            this.handleNonLeftSideMouseMove();
-            return this.handleNonRightSideMouseMove();
+            _this.handleNonLeftSideMouseMove();
+            return _this.handleNonRightSideMouseMove();
           }
-        }, this));
-        this.el.mouseleave(__bind(function() {
-          this.handleNonLeftSideMouseMove();
-          return this.handleNonRightSideMouseMove();
-        }, this));
-        this.el.mousemove(__bind(function(e) {
+        });
+        this.el.mouseleave(function() {
+          _this.handleNonLeftSideMouseMove();
+          return _this.handleNonRightSideMouseMove();
+        });
+        this.el.mousemove(function(e) {
           var x, y;
-          x = e.pageX - this.el.offset().left;
-          y = e.pageY - this.el.offset().top;
-          if (this.el.width() - x < options.arrowRange) {
-            this.handleRightSideMouseMove();
+          x = e.pageX - _this.el.offset().left;
+          y = e.pageY - _this.el.offset().top;
+          if (_this.el.width() - x < options.arrowRange) {
+            _this.handleRightSideMouseMove();
           } else {
-            this.handleNonRightSideMouseMove();
+            _this.handleNonRightSideMouseMove();
           }
           if (x < options.arrowRange) {
-            return this.handleLeftSideMouseMove();
+            return _this.handleLeftSideMouseMove();
           } else {
-            return this.handleNonLeftSideMouseMove();
+            return _this.handleNonLeftSideMouseMove();
           }
-        }, this));
+        });
       }
+
       SlideShowView.prototype.handleNonLeftSideMouseMove = function() {
-        if (this.leftArrowFading || !this.leftArrowVisible) {
-          return;
-        }
+        var _this = this;
+        if (this.leftArrowFading || !this.leftArrowVisible) return;
         this.leftArrowFading = true;
-        return this.el.find('.left-slide-show-arrow').fadeOut(__bind(function() {
-          this.leftArrowFading = false;
-          return this.leftArrowVisible = false;
-        }, this));
+        return this.el.find('.left-slide-show-arrow').fadeOut(function() {
+          _this.leftArrowFading = false;
+          return _this.leftArrowVisible = false;
+        });
       };
+
       SlideShowView.prototype.handleLeftSideMouseMove = function() {
-        if (this.leftArrowFading || this.leftArrowVisible) {
-          return;
-        }
+        var _this = this;
+        if (this.leftArrowFading || this.leftArrowVisible) return;
         this.leftArrowFading = true;
-        return this.el.find('.left-slide-show-arrow').fadeIn(__bind(function() {
-          this.leftArrowFading = false;
-          return this.leftArrowVisible = true;
-        }, this));
+        return this.el.find('.left-slide-show-arrow').fadeIn(function() {
+          _this.leftArrowFading = false;
+          return _this.leftArrowVisible = true;
+        });
       };
+
       SlideShowView.prototype.handleNonRightSideMouseMove = function() {
-        if (this.rightArrowFading || !this.rightArrowVisible) {
-          return;
-        }
+        var _this = this;
+        if (this.rightArrowFading || !this.rightArrowVisible) return;
         this.rightArrowFading = true;
-        return this.el.find('.right-slide-show-arrow').fadeOut(__bind(function() {
-          this.rightArrowFading = false;
-          return this.rightArrowVisible = false;
-        }, this));
+        return this.el.find('.right-slide-show-arrow').fadeOut(function() {
+          _this.rightArrowFading = false;
+          return _this.rightArrowVisible = false;
+        });
       };
+
       SlideShowView.prototype.handleRightSideMouseMove = function() {
-        if (this.rightArrowFading || this.rightArrowVisible) {
-          return;
-        }
+        var _this = this;
+        if (this.rightArrowFading || this.rightArrowVisible) return;
         this.rightArrowFading = true;
-        return this.el.find('.right-slide-show-arrow').fadeIn(__bind(function() {
-          this.rightArrowFading = false;
-          return this.rightArrowVisible = true;
-        }, this));
+        return this.el.find('.right-slide-show-arrow').fadeIn(function() {
+          _this.rightArrowFading = false;
+          return _this.rightArrowVisible = true;
+        });
       };
+
       SlideShowView.prototype.addPicture = function(url) {
         var image;
         image = $(document.createElement("img"));
@@ -245,37 +246,40 @@
         });
         return this.indexCount++;
       };
+
       SlideShowView.prototype.nextPicture = function() {
         this.el.find("img:visible").fadeOut(this.fadeSpeed);
         this.el.find("[data-index=" + this.index + "]").fadeIn(this.fadeSpeed);
         return this.incIndex();
       };
+
       SlideShowView.prototype.prevPicture = function() {
         this.el.find("img:visible").fadeOut(this.fadeSpeed);
         this.el.find("[data-index=" + this.index + "]").fadeIn(this.fadeSpeed);
         return this.decIndex();
       };
+
       SlideShowView.prototype.decIndex = function() {
         this.index--;
-        if (this.index < 0) {
-          return this.index = this.indexCount - 1;
-        }
+        if (this.index < 0) return this.index = this.indexCount - 1;
       };
+
       SlideShowView.prototype.incIndex = function() {
         this.index++;
-        if (this.index >= this.indexCount) {
-          return this.index = 0;
-        }
+        if (this.index >= this.indexCount) return this.index = 0;
       };
+
       SlideShowView.prototype.hide = function() {
         clearTimeout(this.timeout);
         this.el.hide();
         return this.hidden = true;
       };
+
       SlideShowView.prototype.show = function() {
         this.el.show();
         return this.hidden = false;
       };
+
       SlideShowView.prototype.tick = function() {
         var img1;
         img1 = this.el.find("[data-index=" + this.index + "]");
@@ -287,18 +291,23 @@
           return this.timeout = setTimeout(this.tick, this.interval);
         }
       };
+
       SlideShowView.prototype.pause = function() {
         return clearTimeout(this.timeout);
       };
+
       SlideShowView.prototype.start = function() {
         clearTimeout(this.timeout);
         return this.timeout = setTimeout(this.tick, this.interval);
       };
+
       SlideShowView.prototype.init = function() {
         return this.tick();
       };
+
       return SlideShowView;
-    })();
+
+    })(Backbone.View);
     window.stater = function(states) {
       var ret, stateId;
       stateId = 0;
@@ -306,15 +315,15 @@
         var ret1;
         ret1 = states[stateId];
         stateId++;
-        if (stateId === states.length) {
-          stateId = 0;
-        }
+        if (stateId === states.length) stateId = 0;
         return ret1;
       };
       return ret;
     };
-    ImageDisplayerView = (function() {
-      __extends(ImageDisplayerView, Backbone.View);
+    ImageDisplayerView = (function(_super) {
+
+      __extends(ImageDisplayerView, _super);
+
       function ImageDisplayerView(parent) {
         this.showImage = __bind(this.showImage, this);
         this.updateLoader = __bind(this.updateLoader, this);        this.el = parent || div("");
@@ -335,11 +344,14 @@
         this.el.append(this.loading);
         this.loadingTimer = setInterval(this.updateLoader, options.loadingSpeed * 1000);
       }
+
       ImageDisplayerView.prototype.updateLoader = function() {
         return this.loading.html(this.loadingStater());
       };
+
       ImageDisplayerView.prototype.showImage = function(url) {
-        var image;
+        var image,
+          _this = this;
         this.loading.show();
         this.el.find('img:visible').fadeOut();
         if (url in this.images) {
@@ -359,47 +371,60 @@
         });
         this.el.append(image.el);
         image.el.attr("src", image.url);
-        return image.el.load(__bind(function() {
-          this.el.find('img:visible').fadeOut();
+        return image.el.load(function() {
+          _this.el.find('img:visible').fadeOut();
           image.loaded = true;
           image.el.fadeIn();
-          this.currentImage = image.el;
-          return this.loading.hide();
-        }, this));
+          _this.currentImage = image.el;
+          return _this.loading.hide();
+        });
       };
+
       return ImageDisplayerView;
-    })();
-    ContactFormView = (function() {
-      __extends(ContactFormView, Backbone.View);
+
+    })(Backbone.View);
+    ContactFormView = (function(_super) {
+
+      __extends(ContactFormView, _super);
+
       function ContactFormView() {
         this.hide = __bind(this.hide, this);
         this.show = __bind(this.show, this);
-        this.blur = __bind(this.blur, this);        ContactFormView.__super__.constructor.apply(this, arguments);
+        this.blur = __bind(this.blur, this);
+        var _this = this;
+        ContactFormView.__super__.constructor.apply(this, arguments);
         this.el = $("#contact-form");
         this.textarea = this.el.find('textarea');
-        this.el.bind("submit", __bind(function(event) {
+        this.el.bind("submit", function(event) {
           event.preventDefault();
-          this.trigger("submitContactForm", {
-            email: this.el.find("#email").val(),
-            message: "Name: " + (this.el.find('#name').val()) + "\nEmail: " + (this.el.find('#email').val()) + "\nPhone: " + (this.el.find('#phone').val()) + "\nDate: " + (this.el.find('#date').val()) + "\nLocation: " + (this.el.find('#location').val()) + "\nMessage:\n" + (this.el.find('#message').val())
+          _this.trigger("submitContactForm", {
+            email: _this.el.find("#email").val(),
+            message: "Name: " + (_this.el.find('#name').val()) + "\nEmail: " + (_this.el.find('#email').val()) + "\nPhone: " + (_this.el.find('#phone').val()) + "\nDate: " + (_this.el.find('#date').val()) + "\nLocation: " + (_this.el.find('#location').val()) + "\nMessage:\n" + (_this.el.find('#message').val())
           });
           return false;
-        }, this));
+        });
       }
+
       ContactFormView.prototype.blur = function() {
         return this.el.blur();
       };
+
       ContactFormView.prototype.show = function() {
         return this.el.show();
       };
+
       ContactFormView.prototype.hide = function() {
         return this.el.hide();
       };
+
       return ContactFormView;
-    })();
+
+    })(Backbone.View);
     Backbone.emulateHTTP = true;
-    HomeModel = (function() {
-      __extends(HomeModel, Backbone.Model);
+    HomeModel = (function(_super) {
+
+      __extends(HomeModel, _super);
+
       function HomeModel() {
         this.loadGalleries = __bind(this.loadGalleries, this);
         this.loadGalleriesSuccess = __bind(this.loadGalleriesSuccess, this);        HomeModel.__super__.constructor.apply(this, arguments);
@@ -408,7 +433,9 @@
           test: "another thing"
         });
       }
+
       HomeModel.prototype.url = 'http://troybrinkerhoff.com/new2/galleries.php';
+
       HomeModel.prototype.loadGalleriesSuccess = function(data) {
         var i, key, newData, value;
         if (environment === "test") {
@@ -429,9 +456,7 @@
             value.images = _.s(value.images, 0, 3);
             value.thumbs = _.s(value.thumbs, 0, 3);
             newData[key] = value;
-            if (i === 3) {
-              break;
-            }
+            if (i === 3) break;
           }
           console.log(JSON.stringify(newData));
         }
@@ -439,6 +464,7 @@
           "galleries": data
         });
       };
+
       HomeModel.prototype.loadGalleries = function() {
         return $.ajax({
           type: "GET",
@@ -447,59 +473,68 @@
           success: this.loadGalleriesSuccess
         });
       };
+
       return HomeModel;
-    })();
-    ImagePanelView = (function() {
-      __extends(ImagePanelView, Backbone.View);
+
+    })(Backbone.Model);
+    ImagePanelView = (function(_super) {
+
+      __extends(ImagePanelView, _super);
+
       function ImagePanelView() {
         this.triggerClick = __bind(this.triggerClick, this);        ImagePanelView.__super__.constructor.apply(this, arguments);
         this.el = div("");
         _.bindAll(this);
       }
+
       ImagePanelView.prototype.addImage = function(url, css, meta) {
-        var img1;
-        if (k.s(url, -2) === "db") {
-          return;
-        }
+        var img1,
+          _this = this;
+        if (k.s(url, -2) === "db") return;
         img1 = $(document.createElement("img"));
         img1.attr("src", url);
         img1.addClass("thumbnail-image");
         img1.css(css);
         meta.img = img1;
         this.el.append(img1);
-        img1.bind("click", __bind(function(event) {
-          this.triggerClick(meta);
-          this.el.find("img").css({
+        img1.bind("click", function(event) {
+          _this.triggerClick(meta);
+          _this.el.find("img").css({
             opacity: 0.5
           });
-          this.el.find('[data-active=true]').removeAttr('data-active');
+          _this.el.find('[data-active=true]').removeAttr('data-active');
           img1.attr("data-active", 'true');
           return img1.css({
             "opacity": 1
           });
-        }, this));
-        img1.bind("mouseover", __bind(function(event) {
+        });
+        img1.bind("mouseover", function(event) {
           return img1.css({
             "opacity": 1
           });
-        }, this));
+        });
         return img1.bind({
-          "mouseout": __bind(function(event) {
+          "mouseout": function(event) {
             if (img1.attr("data-active") !== 'true') {
               return img1.css({
                 "opacity": 0.5
               });
             }
-          }, this)
+          }
         });
       };
+
       ImagePanelView.prototype.triggerClick = function(meta) {
         return this.trigger("click", meta);
       };
+
       return ImagePanelView;
-    })();
-    HorizontalSliderView = (function() {
-      __extends(HorizontalSliderView, Backbone.View);
+
+    })(Backbone.View);
+    HorizontalSliderView = (function(_super) {
+
+      __extends(HorizontalSliderView, _super);
+
       function HorizontalSliderView(width, height) {
         this.width = width != null ? width : 300;
         this.height = height != null ? height : 300;
@@ -536,45 +571,48 @@
         this.el.bind("mousenotextremetop", this.handleMouseNotExtremeTop);
         return this;
       }
+
       HorizontalSliderView.prototype.handleMouseNotExtremeTop = function() {
-        if (this.slidingState === "up") {
-          return;
-        }
+        if (this.slidingState === "up") return;
         this.slidingState = false;
         return clearInterval(this.slidingInterval);
       };
+
       HorizontalSliderView.prototype.handleMouseExtremeTop = function() {
-        if (this.slidingState !== false) {
-          return;
-        }
+        if (this.slidingState !== false) return;
         this.slidingState = "down";
         clearInterval(this.slidingInterval);
         return this.slidingInterval = setInterval(this.slideDownSmall, options.thumbnailScrollSpeed);
       };
+
       HorizontalSliderView.prototype.handleMouseNotExtremeBottom = function() {
-        if (this.slidingState === "down") {
-          return;
-        }
+        if (this.slidingState === "down") return;
         this.slidingState = false;
         return clearInterval(this.slidingInterval);
       };
+
       HorizontalSliderView.prototype.handleMouseExtremeBottom = function() {
-        if (this.slidingState !== false) {
-          return;
-        }
+        if (this.slidingState !== false) return;
         this.slidingState = "up";
         clearInterval(this.slidingInterval);
         return this.slidingInterval = setInterval(this.slideUpSmall, options.thumbnailScrollSpeed);
       };
+
       HorizontalSliderView.prototype.slideUpSmall = function() {
-        return this.currentPanelEl.css("top", this.currentPanelEl.position().top - 2 + "px");
-      };
-      HorizontalSliderView.prototype.slideDownSmall = function() {
-        if (this.currentPanelEl.position().top >= 0) {
+        var numberOfImages, numberOfRows;
+        numberOfImages = this.currentPanelEl.find("img").length;
+        numberOfRows = Math.ceil(numberOfImages / 3);
+        if (-this.currentPanelEl.position().top > ((numberOfRows * 48) + 43)) {
           return;
         }
+        return this.currentPanelEl.css("top", this.currentPanelEl.position().top - 2 + "px");
+      };
+
+      HorizontalSliderView.prototype.slideDownSmall = function() {
+        if (this.currentPanelEl.position().top >= 0) return;
         return this.currentPanelEl.css("top", this.currentPanelEl.position().top + 2 + "px");
       };
+
       HorizontalSliderView.prototype.goto = function(index) {
         var translateX;
         this.currentPanel = index;
@@ -590,13 +628,13 @@
           });
         }
       };
+
       HorizontalSliderView.prototype.addPanel = function(panelView) {
-        var count, panelEl, panelWrapper;
+        var count, panelEl, panelWrapper,
+          _this = this;
         this.panelCount++;
         count = this.panelCount;
-        if (!panelView) {
-          panelView = $("<div>");
-        }
+        if (!panelView) panelView = $("<div>");
         panelEl = getEl(panelView);
         panelWrapper = $("<div>");
         panelWrapper.addClass("panel");
@@ -610,21 +648,26 @@
           left: (this.panelCount - 1) * this.width
         });
         panelWrapper.append(panelEl);
-        panelWrapper.bind("click", __bind(function(event) {
-          return this.panelWrapperClick(count - 1);
-        }, this));
+        panelWrapper.bind("click", function(event) {
+          return _this.panelWrapperClick(count - 1);
+        });
         $(this.slideWrapper).css({
           "width": (this.panelCount * this.width) + "px"
         });
         return this.slideWrapper.append(getEl(panelWrapper));
       };
+
       HorizontalSliderView.prototype.panelWrapperClick = function(count) {
         return this.trigger("click", count);
       };
+
       return HorizontalSliderView;
-    })();
-    HomeView = (function() {
-      __extends(HomeView, Backbone.View);
+
+    })(Backbone.View);
+    HomeView = (function(_super) {
+
+      __extends(HomeView, _super);
+
       function HomeView() {
         this.showViewer = __bind(this.showViewer, this);
         this.hideViewer = __bind(this.hideViewer, this);
@@ -633,7 +676,9 @@
         this.linkAreaMouseOver = __bind(this.linkAreaMouseOver, this);
         HomeView.__super__.constructor.apply(this, arguments);
       }
+
       HomeView.prototype.initialize = function() {
+        var _this = this;
         HomeView.__super__.initialize.apply(this, arguments);
         _.bindAll(this);
         this.thumbsWidth = options.thumbnailBarWidth;
@@ -643,47 +688,53 @@
         this.thumbsView = new HorizontalSliderView(this.thumbsWidth, options.thumbnailBarHeight);
         $('#thumbs').append(this.thumbsView.el);
         this.imageDisplayer = new ImageDisplayerView($('#viewer'));
-        $('area').mouseover(__bind(function(e) {
-          return this.linkAreaMouseOver($(e.target).attr('alt'));
-        }, this));
-        $('area').mouseout(__bind(function(e) {
-          return this.linkAreaMouseOut($(e.target).attr('alt'));
-        }, this));
+        $('area').mouseover(function(e) {
+          return _this.linkAreaMouseOver($(e.target).attr('alt'));
+        });
+        $('area').mouseout(function(e) {
+          return _this.linkAreaMouseOut($(e.target).attr('alt'));
+        });
         $("#banner").css("top", "" + options.bannerStartPosition + "px");
         $("#slide-show").css("margin-top", options.slideShowTopMargin);
         this.contactFormView = new ContactFormView;
-        return this.contactFormView.bind("submitContactForm", __bind(function(formInfo) {
+        return this.contactFormView.bind("submitContactForm", function(formInfo) {
           return $.ajax({
             type: "GET",
             url: "http://troybrinkerhoff.com/new2/contact.php",
             data: formInfo,
             dataType: "jsonp",
-            success: __bind(function(data) {
+            success: function(data) {
               if (data === 1) {
                 alert("Thank you");
-                return this.contactFormView.blur();
+                return _this.contactFormView.blur();
               } else {
                 return alert("Error while sending contact form");
               }
-            }, this)
+            }
           });
-        }, this));
+        });
       };
+
       HomeView.prototype.linkAreaMouseOver = function(name) {
         return;
         return $(".bullet." + name).show();
       };
+
       HomeView.prototype.linkAreaMouseOut = function(name) {
         return;
         return $(".bullet." + name).hide();
       };
+
       HomeView.prototype.setImage = function(url) {
         return this.imageDisplayer.showImage(url);
       };
+
       HomeView.prototype.displayFirstImage = function() {
         return this.thumbsView.currentPanelEl.find("img:first").click();
       };
+
       HomeView.prototype.addImage = function(urls) {};
+
       HomeView.prototype.slideThumbnails = function(outOrIn) {
         var right, translate;
         if (outOrIn === "out") {
@@ -703,6 +754,7 @@
           });
         }
       };
+
       HomeView.prototype.slideBanner = function(upOrDown) {
         var slideAmt, theTop, translate;
         slideAmt = options.bannerEndPosition - options.bannerStartPosition;
@@ -723,23 +775,31 @@
           });
         }
       };
+
       HomeView.prototype.hideViewer = function() {
         return $('#viewer').hide();
       };
+
       HomeView.prototype.showViewer = function() {
         return $('#viewer').show();
       };
+
       return HomeView;
-    })();
-    ManyImagesView = (function() {
-      __extends(ManyImagesView, Backbone.View);
+
+    })(Backbone.View);
+    ManyImagesView = (function(_super) {
+
+      __extends(ManyImagesView, _super);
+
       function ManyImagesView() {
         this.loadSpecific = __bind(this.loadSpecific, this);
         this.addImage = __bind(this.addImage, this);        ManyImagesView.__super__.constructor.apply(this, arguments);
         this.images = [];
       }
+
       ManyImagesView.prototype.addImage = function(url) {
-        var image;
+        var image,
+          _this = this;
         image = {
           loaded: false,
           url: url,
@@ -747,45 +807,58 @@
           onload: function() {}
         };
         this.images.push(image);
-        return image.el.load(__bind(function() {
+        return image.el.load(function() {
           image.loaded = true;
-          this.index++;
-          return this.loadSpecific;
-        }, this));
+          _this.index++;
+          return _this.loadSpecific;
+        });
       };
+
       ManyImagesView.prototype.kickOffLoading = function() {};
+
       ManyImagesView.prototype.loadSpecific = function() {
         var image;
         image = this.images[this.index];
         return image.el.attr("src", image.url);
       };
+
       return ManyImagesView;
-    })();
-    HomeRoutes = (function() {
-      __extends(HomeRoutes, Backbone.Controller);
+
+    })(Backbone.View);
+    HomeRoutes = (function(_super) {
+
+      __extends(HomeRoutes, _super);
+
       function HomeRoutes() {
         this.home = __bind(this.home, this);
         this.gallery = __bind(this.gallery, this);
         this.contact = __bind(this.contact, this);
         HomeRoutes.__super__.constructor.apply(this, arguments);
       }
+
       HomeRoutes.prototype.routes = {
         "galleries/:gallery": "gallery",
         "home": "home",
         "contact": "contact"
       };
+
       HomeRoutes.prototype.contact = function() {
         return app.handleContactClick();
       };
+
       HomeRoutes.prototype.gallery = function(galleryName) {
         return app.handleLinkClick(galleryName);
       };
+
       HomeRoutes.prototype.home = function() {
         return app.handleHomeClick();
       };
+
       return HomeRoutes;
-    })();
+
+    })(Backbone.Controller);
     HomePresenter = (function() {
+
       function HomePresenter() {
         this.handleGalleriesChange = __bind(this.handleGalleriesChange, this);
         this.handleImagePanelImageClicked = __bind(this.handleImagePanelImageClicked, this);
@@ -804,6 +877,7 @@
         this.model.bind("change:galleries", this.handleGalleriesChange);
         this.model.loadGalleries();
       }
+
       HomePresenter.prototype.handleHomeClick = function() {
         this.view.hideViewer();
         this.slideShow.show();
@@ -813,6 +887,7 @@
         this.view.slideBanner("up");
         return this.view.contactFormView.hide();
       };
+
       HomePresenter.prototype.handleContactClick = function() {
         this.slideShow.hide();
         this.view.hideViewer();
@@ -821,6 +896,7 @@
         this.view.slideThumbnails("in");
         return this.view.slideBanner("down");
       };
+
       HomePresenter.prototype.handleLinkClick = function(linkName) {
         var gallery_name;
         this.view.showViewer();
@@ -829,9 +905,7 @@
           this.slideShow.hide();
           this.view.showViewer();
         }
-        if (linkName === this.view.galleryState) {
-          return;
-        }
+        if (linkName === this.view.galleryState) return;
         this.view.contactFormView.hide();
         this.view.galleryState = linkName;
         this.view.slideThumbnails("out");
@@ -840,11 +914,14 @@
         this.view.thumbsView.goto(this.linkPanelMap[linkName]);
         return this.view.displayFirstImage();
       };
+
       HomePresenter.prototype.handleImagePanelImageClicked = function(meta) {
         return this.view.setImage(meta.image);
       };
+
       HomePresenter.prototype.handleGalleriesChange = function(event) {
-        var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _i, _len, _len2, _ref, _ref2, _ref3;
+        var gallery, galleryIndex, image, imagePanel, index, info, linkName, meta, thumb, _i, _len, _len2, _ref, _ref2, _ref3,
+          _this = this;
         _ref = k.s(this.model.get("galleries").gallery_slideshow.images, 0);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           image = _ref[_i];
@@ -859,9 +936,9 @@
           linkName = k.capitalize(k(gallery).s("gallery_".length));
           imagePanel = new ImagePanelView;
           imagePanel.linkName = linkName;
-          imagePanel.bind("click", __bind(function(meta) {
-            return this.handleImagePanelImageClicked(meta);
-          }, this));
+          imagePanel.bind("click", function(meta) {
+            return _this.handleImagePanelImageClicked(meta);
+          });
           _ref3 = info.images;
           for (index = 0, _len2 = _ref3.length; index < _len2; index++) {
             image = _ref3[index];
@@ -879,10 +956,13 @@
         }
         return Backbone.history.start();
       };
+
       return HomePresenter;
+
     })();
     window.app = new HomePresenter;
     app = window.app;
     return routes = new HomeRoutes;
   });
+
 }).call(this);

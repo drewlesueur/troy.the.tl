@@ -436,7 +436,9 @@
         @slidingInterval = setInterval @slideUpSmall, options.thumbnailScrollSpeed
 
       slideUpSmall: () =>
-        #if @currentPanelEl.position().top > @currentPanelEl.height() then return
+        numberOfImages = @currentPanelEl.find("img").length
+        numberOfRows = Math.ceil(numberOfImages / 3)
+        if -@currentPanelEl.position().top > ((numberOfRows * 48) + 43) then return
         @currentPanelEl.css "top", @currentPanelEl.position().top - 2 + "px"
       slideDownSmall: () =>
         if @currentPanelEl.position().top >= 0 then return
